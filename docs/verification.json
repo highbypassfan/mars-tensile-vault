@@ -1,0 +1,14 @@
+{
+  "wall_bottom_samples": 1024,
+  "max_clamp_centre_error_m": 3.0517578125e-05,
+  "airlock_chamber_m": [
+    18,
+    8,
+    6
+  ],
+  "hatch_clear_m": [
+    6.5,
+    5
+  ],
+  "ramp_length_m": 6
+}

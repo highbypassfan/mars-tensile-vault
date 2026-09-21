@@ -1,0 +1,8 @@
+# Blender backup files and local render outputs
+*.blend1
+*.blend2
+__pycache__/
+renders/
+*.log
+.DS_Store
+Thumbs.db

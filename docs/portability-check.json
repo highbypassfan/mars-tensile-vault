@@ -1,0 +1,8 @@
+{
+  "blender": "5.2.1 LTS",
+  "packed_images": 10,
+  "missing_images": [],
+  "linked_libraries": 0,
+  "membrane_vertices": 307881,
+  "startup_scripts_required": false
+}

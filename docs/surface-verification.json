@@ -1,0 +1,30 @@
+{
+  "False": {
+    "ground_vertex_count": 20802,
+    "z_range": [
+      -0.501017689704895,
+      0.0011648533400148153
+    ],
+    "instance_count": 242476
+  },
+  "True": {
+    "ground_vertex_count": 20802,
+    "z_range": [
+      -0.501017689704895,
+      0.0011648533400148153
+    ],
+    "instance_count": 249375
+  },
+  "packed_images": true,
+  "beam_degrees": 160.0,
+  "omnidirectional_glow_fraction": 0.08,
+  "grass_off_on_ground_coordinates_sha256": [
+    "0b88601948ae7deab5cbb8db9da3f1148a79c2509e7c3589920c21bd4f7ac9b4",
+    "0b88601948ae7deab5cbb8db9da3f1148a79c2509e7c3589920c21bd4f7ac9b4"
+  ],
+  "viewport_materials": [
+    "Membrane \u2022 clear modeling preview",
+    "Perimeter clamp \u2022 galvanized steel",
+    "Perimeter foundation \u2022 cast concrete"
+  ]
+}

@@ -49,7 +49,7 @@ All textures and referenced Geometry Nodes source meshes are packed or stored in
 Select `LIGHTING • toggle Night sky` and open Custom Properties:
 
 - **Night sky** switches the world, suns, and exposure together.
-- **Night exposure EV** defaults to +3.25. Day exposure remains -0.25.
+- **Night exposure EV** defaults to +3.25. Day exposure is +0.75 after the surface-lighting update.
 - **Night sky gain** defaults to 0.2 and adjusts the catalogue sky's radiance, including its contribution to lighting.
 - Ring **LED Strength** remains 200 on the cage modifier. Mesh emission now samples both sides explicitly. Cycles uses eight diffuse bounces, 32 total/transmission bounces, and 96 transparent crossings; indirect clamping is disabled.
 
@@ -60,3 +60,20 @@ The sky is NASA SVS Deep Star Maps 2020, packed inside the blend. It contains ca
 Orientation uses the IAU 2009 Mars rotation polynomial from NAIF pck00010, with TT approximating TDB and UTC+69.184 seconds. It is a visualization, not a current precision ephemeris. No Sun, planets, Phobos or Deimos are included in this distant-sky map; the night toggle does not calculate sunset. The map is not calibrated in absolute physical radiance, so its gain and photographic exposure remain adjustable. Bright lamps and membrane scattering reduce visible stellar contrast.
 
 Sky coordinates and epoch are recorded on the lighting control. To change their orientation, edit these properties and run `tools/setup_night.py` in Blender, then reopen the saved file. Exposure, gain and the day/night toggle update normally without scripts. Normal use requires no Python auto-execution or external textures. The local-to-J2000 matrix is recorded in `docs/sky-orientation.json`.
+
+## Grass, surface relief, and wide ring lighting
+
+Select **SURFACES • grass and lighting controls**, then Object Properties > Custom Properties.
+
+- **Grass field** switches the existing prepared ground between regolith and turf. The soil datum and ground geometry do not move. Blades grow above that datum.
+- **Grass blade height m**: 0.14 m default. **Grass clumps per m2**: 6 default. Each instance references the same 96-blade clump mesh, without realizing copies. **Grass detail distance m**: 65 m from the active render camera, with a 20 m density fade to textured turf. **Viewport grass fraction**: 0.12. Increase distance for low-angle, long-lens shots if the transition becomes visible.
+- The grass footprint follows live column spacing/count and the rounded enclosure, stopping inside the perimeter concrete. The footing bases have small grass clearances. Dense close-up detail is camera-dependent; the distant lawn uses a surface shader.
+- **Concrete relief m**: 0.008; **Soil relief m**: 0.025. These control texture-driven bump relief, not geometric displacement. Silhouettes and the ground datum remain unchanged. Poly Haven image maps supply color, roughness and height, with fine procedural grain. Maps are packed in the blend. Ground maps are recolored for Mars.
+- **LED full beam angle deg**: now 160 degrees total, centered downwards, with softened beam edges. **LED ambient glow fraction**: 0.08 retains faint emission from all other directions. **LED beam gain**: 1.6 scales brightness while preserving the cage's LED Strength value of 200. Directionality is evaluated on the actual emitting arc surfaces; no proxy lights are added. Day exposure is now +0.75 EV; night remains +3.25 EV.
+- **Clear modeling membrane** uses a very transparent preview material only on membrane faces. Layout and Modeling open in Material Preview; steel and concrete remain solid. Final Cycles renders retain the full membrane shader. Solid viewport mode does not evaluate transparency shaders.
+
+Validation: grass on/off produced identical ground mesh coordinates and vertex count; blade instance count increased when enabled. All texture images remained packed. Previews were rendered using HIP GPU.
+
+The original placeholder person is temporarily turned away from the rover inspection camera, with their head tilted upward. A more realistic, rigged [Standing Man by zhuoyi0904](https://sketchfab.com/3d-models/standing-man-8401da7cb2564fc08681836cbeff39bc), listed under CC BY 4.0, was located, but Chrome blocked both original and converted asset downloads. It is not included in this version. The replacement can be imported once the model file is available.
+
+The setup/migration scripts in tools are for reproducing changes from the preceding revision, not for repeatedly rebuilding the current file. Ordinary controls work natively without running scripts.

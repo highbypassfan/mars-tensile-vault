@@ -26,3 +26,7 @@ No blanket redistribution or modification license is asserted for the entire sce
 NASA/Goddard Space Flight Center Scientific Visualization Studio, Ernie Wright: [Deep Star Maps 2020](https://svs.gsfc.nasa.gov/4851/). The 4k linear EXR is embedded in the blend; the original can be downloaded from that page. Acknowledgement and source credit are retained here; consult NASA's media usage guidelines for downstream use. Catalogue contributors are credited on the source page.
 
 Mars orientation coefficients: NASA/JPL NAIF `pck00010.tpc` (IAU 2009). Kernel copies were obtained from the [SpiceyPy test-kernel mirror](https://github.com/AndrewAnnex/SpiceyPyTestKernels); the implementation uses the Mars polynomial directly and has no SpiceyPy dependency. `naif0012.tls` is retained as the leap-second reference.
+
+## Ground and concrete texture maps
+
+[Concrete](https://polyhaven.com/a/concrete) and [Aerial Ground Rock](https://polyhaven.com/a/aerial_ground_rock), by Rob Tuytel / Poly Haven, are licensed [CC0](https://polyhaven.com/license). Their 2k diffuse, roughness, and displacement images are packed into the blend. Ground color was adjusted for Mars; displacement images drive bump relief. Grass blades and turf shading are custom geometry/shaders created for this scene.

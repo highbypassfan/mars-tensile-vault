@@ -9,3 +9,6 @@ Thumbs.db
 
 # Source copy is already packed inside the blend
 assets/sky/*.exr
+
+# Surface image source copies are packed into the blend
+assets/surfaces/*.jpg

@@ -38,3 +38,13 @@ The share file includes a packed catalogue star map oriented for Gale Crater, se
 ![Night interior](previews/night-interior.png)
 ![Night exterior](previews/night-exterior.png)
 ![Sky through membrane](previews/night-roof.png)
+
+## Grass and surface update
+
+Toggle **Grass field** on **SURFACES • grass and lighting controls**. The file includes shared grass-blade instances with camera-distance detail, packed concrete/soil texture maps, transparent modeling-preview film, and 160-degree downward LED beams with faint all-angle glow. See [surface controls](docs/CONTROLS.md#grass-surface-relief-and-wide-ring-lighting).
+
+![Grass field](previews/grass-day.png)
+![Concrete and blades](previews/concrete-grass-detail.png)
+![Wide-beam night lighting](previews/grass-night.png)
+
+The realistic person replacement is pending a blocked asset download; the original figure remains as a temporary scale reference.

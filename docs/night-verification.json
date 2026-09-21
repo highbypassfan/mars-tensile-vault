@@ -1,0 +1,19 @@
+{
+  "False": {
+    "exposure": -0.25,
+    "suns": {
+      "Soft sun": 2.0,
+      "Mars_Sun": 5.0
+    },
+    "sky_gain": 0.20000000298023224
+  },
+  "True": {
+    "exposure": 3.25,
+    "suns": {
+      "Soft sun": 0.0,
+      "Mars_Sun": 0.0
+    },
+    "sky_gain": 0.20000000298023224
+  },
+  "packed_images": true
+}

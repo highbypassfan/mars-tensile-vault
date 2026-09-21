@@ -43,3 +43,20 @@ Select LIGHTING • toggle Night sky and enable Night sky under Custom Propertie
 ## Portability
 
 All textures and referenced Geometry Nodes source meshes are packed or stored in the blend file. The optional tools/render.py script chooses a supported GPU or uses CPU, renders the active camera, and writes renders/render.png. The scene does not require executing embedded Python. Legacy construction scripts, local logs, machine preferences and prior blend backups are not part of this package.
+
+## Night rendering
+
+Select `LIGHTING • toggle Night sky` and open Custom Properties:
+
+- **Night sky** switches the world, suns, and exposure together.
+- **Night exposure EV** defaults to +3.25. Day exposure remains -0.25.
+- **Night sky gain** defaults to 0.2 and adjusts the catalogue sky's radiance, including its contribution to lighting.
+- Ring **LED Strength** remains 200 on the cage modifier. Mesh emission now samples both sides explicitly. Cycles uses eight diffuse bounces, 32 total/transmission bounces, and 96 transparent crossings; indirect clamping is disabled.
+
+The saved scene uses GPU rendering. `tools/render.py` selects an available GPU and falls back to CPU on machines without a supported device. A bright visible LED surface is not a measure of ground illuminance: these narrow rings are about 50 m above the floor. The night exposure reveals their illumination without adding hidden fill lights.
+
+The sky is NASA SVS Deep Star Maps 2020, packed inside the blend. It contains catalogue stars, the Milky Way and Magellanic Clouds. Distant stellar directions are effectively the same from Mars and Earth; local orientation is what changes. The example uses Gale Crater, planetocentric latitude -4.59 degrees, east longitude 137.44 degrees, at 2026-09-20 00:00 UTC. World +X is east, +Y north, +Z up.
+
+Orientation uses the IAU 2009 Mars rotation polynomial from NAIF pck00010, with TT approximating TDB and UTC+69.184 seconds. It is a visualization, not a current precision ephemeris. No Sun, planets, Phobos or Deimos are included in this distant-sky map; the night toggle does not calculate sunset. The map is not calibrated in absolute physical radiance, so its gain and photographic exposure remain adjustable. Bright lamps and membrane scattering reduce visible stellar contrast.
+
+Sky coordinates and epoch are recorded on the lighting control. To change their orientation, edit these properties and run `tools/setup_night.py` in Blender, then reopen the saved file. Exposure, gain and the day/night toggle update normally without scripts. Normal use requires no Python auto-execution or external textures. The local-to-J2000 matrix is recorded in `docs/sky-orientation.json`.

@@ -30,3 +30,11 @@ See [the controls guide](docs/CONTROLS.md) and [asset credits](ASSET-CREDITS.md)
 This is a visualization, not a validated habitat structure. The roof reuses a saved pressure-simulation shape; layout edits do not run a new engineering analysis. Airlocks are closed visual assemblies; their membrane penetrations, gaskets, mechanisms and operational sequencing are schematic.
 
 The scene contains third-party and owner-supplied assets. See the credits for provenance and applicable reuse information; this repository does not apply a blanket license to all included assets.
+
+## Night previews
+
+The share file includes a packed catalogue star map oriented for Gale Crater, separate day/night exposure, and explicitly sampled ring emitters. See [night controls and sky assumptions](docs/CONTROLS.md#night-rendering).
+
+![Night interior](previews/night-interior.png)
+![Night exterior](previews/night-exterior.png)
+![Sky through membrane](previews/night-roof.png)

@@ -20,3 +20,9 @@ The publisher discloses AI assistance for these library models. They are not pho
 The Curiosity_static.glb model and its textures were supplied by the project owner and embedded in the scene. The original source/license was not included with that supplied copy. No additional license or ownership claim is asserted here for the rover. Verify its original license before reusing it independently.
 
 No blanket redistribution or modification license is asserted for the entire scene. Individual third-party licenses, where identified above, remain applicable.
+
+## Astronomical sky
+
+NASA/Goddard Space Flight Center Scientific Visualization Studio, Ernie Wright: [Deep Star Maps 2020](https://svs.gsfc.nasa.gov/4851/). The 4k linear EXR is embedded in the blend; the original can be downloaded from that page. Acknowledgement and source credit are retained here; consult NASA's media usage guidelines for downstream use. Catalogue contributors are credited on the source page.
+
+Mars orientation coefficients: NASA/JPL NAIF `pck00010.tpc` (IAU 2009). Kernel copies were obtained from the [SpiceyPy test-kernel mirror](https://github.com/AndrewAnnex/SpiceyPyTestKernels); the implementation uses the Mars polynomial directly and has no SpiceyPy dependency. `naif0012.tls` is retained as the leap-second reference.

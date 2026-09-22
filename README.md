@@ -18,6 +18,8 @@ Open **mars-tensile-vault.blend** in **Blender 5.2 LTS or newer**. Textures and 
 
 ## Scene contents
 
+Reusable inspection, safe variant creation and single-camera previews are available through `python tools/vault.py`. See [Scene tools](docs/SCENE-TOOLS.md) for commands and settings examples. A project-specific Codex skill is included in `skills/mars-vault-blender`.
+
 The rings are 75 m above grade. Three approximately 50 m Starships are preserved inside, with eight crew/cargo ships on exterior pads east of the enclosure. The freight quarter is on that same side, with truck aisles connected to the actual vehicle-airlock positions. Thermal tiles retain their dark material; stainless steel uses a separate procedural finish.
 
 The native cage still supports column count, spacing, height and ring/cable edits. **The district layout, grass footprint, roads and terrain are an editable masterplan for this 50 × 50 configuration; they do not automatically regenerate after changing the cage footprint.**

@@ -46,7 +46,7 @@ Concrete uses aggregate noise, fine pore relief, and varying roughness in world 
 
 ## Layout and cameras
 
-50 × 50 columns, 50 m spacing, 75 m ring elevation. The occupied envelope extends about 2.66 km across its outer clamp. The accepted pressure-derived roof is retained. Three interior ships are about 50 m tall, with at least 25 m nominal roof clearance. Eight exterior landing pads begin roughly 400 m outside the eastern clamp.
+50 × 50 columns, 50 m spacing, 200 m ring elevation. The occupied envelope extends about 2.91 km across its outer clamp. The accepted pressure-derived roof is retained. Three interior ships are about 50 m tall, with about 150 m nominal roof clearance. Eight exterior landing pads begin roughly 2.3 km outside the eastern clamp.
 
 Freight is in the southeast, on the landing-field side. Its clear aisles meet east-side airlocks; a regolith perimeter route and landing-field spur complete the connection. Cargo occupies reusable instances on aluminum C-channel pallets. The airlocks remain closed schematic assemblies, not cut or animated operational openings.
 
@@ -76,3 +76,24 @@ The open valley was widened approximately fivefold. Mesa escarpments are 26–42
 Final camera/control collections are grouped in the Outliner; earlier inspection cameras are archived. Extra light/camera overlays are hidden in the viewport for a cleaner modeling view. Enable Overlays → Extras to see their handles again. The blend opens in a saved camera view with the master controls selected.
 
 The prior moon object had both render and viewport visibility disabled. Both are restored; the night toggle now controls its output. Apron fixtures sit 1.2 m clear of the airlock headers to avoid self-occlusion.
+
+
+## Viewport LOD and raised-roof update
+
+On **SETTLEMENT • time and district controls**:
+
+| Control | Default | Effect in the viewport only |
+|---|---:|---|
+| Viewport tether LOD | On | Use coarse shared anchors; final renders retain full detail |
+| Viewport tether every L / W | 2 / 2 | Show 625 of 2,500 anchors; set 1 / 1 to show every anchor |
+| Viewport tether branches | 4 | Simplified splayed-wire count |
+| Viewport tether sides | 4 | Cable cross-section detail |
+| Viewport ring segments | 24 | Steel ring detail |
+
+Fittings and solar inserts are omitted from the coarse anchor preview. Switch LOD off to inspect the full assembly. Native **Is Viewport** switches automatically restore all anchors and original detail for final renders, including when the anchor count changes. The setting affects interactive viewports (including rendered viewport previews), not only the named Layout and Modeling workspaces. Those two workspaces open in Solid shading for navigation.
+
+The measured default anchor face workload is about 96% lower: 625 × 718 faces versus 2,500 × 4,689. This is a geometry-count comparison, not an FPS benchmark. The membrane, grass, terrain and other assets can still affect editor responsiveness.
+
+Your 200 m cage and membrane heights are preserved. Sampled ring lights now follow cage height; the exterior haze clearance follows it vertically and has been widened for the current wall. Six existing residential plots have 72–130 m towers. Eight exterior ships and pads have moved exactly 2 km east, and three pad collectors meet one dark-brown trunk to the evaluated eastern freight airlock. The near landing terrain is graded flat. Entrance fixtures and camera 08 were repositioned to the current perimeter; camera 06 follows the moved field. Further footprint changes still require updating the fixed roads, fixtures and districts.
+
+No new preview images were rendered for this update, per the preference for geometry/driver checks. The older previews show the earlier layout.

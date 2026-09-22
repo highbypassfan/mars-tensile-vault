@@ -1,0 +1,13 @@
+{
+  "displayed_anchors": {
+    "True": 625,
+    "False": 2500
+  },
+  "faces_per_anchor": {
+    "False": 4689,
+    "True": 718
+  },
+  "estimated_anchor_face_reduction": 0.9617189166133504,
+  "ring_light_elevation_m": 199.8800048828125,
+  "note": "Viewport geometry counts, not an FPS benchmark; no scene saved"
+}

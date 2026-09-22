@@ -150,7 +150,7 @@ def apply_changes(path, frame):
             ui = obj.id_properties_ui(key).as_dict()
             if value < ui.get('min', -math.inf) or value > ui.get('max', math.inf):
                 raise ValueError(f'{key}: value outside stored UI limits')
-            data_path = '[' + json.dumps(key) + ']'
+            data_path = '[' + json.dumps(key, ensure_ascii=False) + ']'
             if obj.animation_data and any(d.data_path == data_path for d in obj.animation_data.drivers):
                 raise ValueError(f'{key}: driven property; edit its source control instead')
             pending.append((obj, key, value, data_path))

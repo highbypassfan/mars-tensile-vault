@@ -1,3 +1,5 @@
+> The year-15 scene supersedes the older lighting, grass, dimensions and surface settings below. Use [YEAR15-CONTROLS.md](YEAR15-CONTROLS.md) for the current master controls. The original membrane/foundation controls remain available.
+
 # Pressure-derived membrane and perimeter foundation
 
 The active object is MEMBRANE • pressure-derived panels and perimeter foundation. Its roof samples a saved, smoothed Cloth result cut to a 50 m square bay. Opposite edges were conditioned symmetrically for repetition (the original mismatch was at most 6.7 cm). This uses the earlier pressure result rather than a new sine function. Changes to column count, spacing, cap diameter and height remain live through the original cage modifier. The transition at each metal ring is re-seated locally to avoid a gap caused by smoothing the saved pressure result.
@@ -74,6 +76,6 @@ Select **SURFACES • grass and lighting controls**, then Object Properties > Cu
 
 Validation: grass on/off produced identical ground mesh coordinates and vertex count; blade instance count increased when enabled. All texture images remained packed. Previews were rendered using HIP GPU.
 
-The original placeholder person is temporarily turned away from the rover inspection camera, with their head tilted upward. A more realistic, rigged [Standing Man by zhuoyi0904](https://sketchfab.com/3d-models/standing-man-8401da7cb2564fc08681836cbeff39bc), listed under CC BY 4.0, was located, but Chrome blocked both original and converted asset downloads. It is not included in this version. The replacement can be imported once the model file is available.
+The realistic, rigged [Standing Man by zhuoyi0904](https://sketchfab.com/3d-models/standing-man-8401da7cb2564fc08681836cbeff39bc) is now embedded, with textures packed. The person stands 1.78 m tall beside Curiosity, faces away from the rover inspection camera, and looks upward through a 34-degree combined neck/head adjustment. Select **PERSON RIG • editable head and neck pose** to change the pose in Pose Mode. Imported animation was frozen into a static stance. The original figure is preserved in the hidden **ARCHIVE • original placeholder worker** collection.
 
 The setup/migration scripts in tools are for reproducing changes from the preceding revision, not for repeatedly rebuilding the current file. Ordinary controls work natively without running scripts.

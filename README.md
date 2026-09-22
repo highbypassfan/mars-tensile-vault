@@ -1,50 +1,37 @@
-# Mars Tensile Vault
+# Mars Tensile Vault — year 15
 
-An editable Blender study of a Mars habitat inspired by Casey Handmer's tensile-vault concept: pressure-derived membrane bays, cable anchors, continuous perimeter clamps, vehicle airlocks, regolith terrain, and a supply yard with Curiosity.
+An editable Blender concept of a 50 × 50-column Mars settlement at 50 m spacing, in an open valley surrounded by distant mesas. The original pressure-derived membrane and perimeter remain live; the year-15 masterplan adds homes, factory halls, utilities, freight, and landed Starships.
 
-![Habitat interior](previews/interior.png)
+![Valley masterplan](previews/year15-valley-day.png)
 
-## Open the scene
+## Open and render
 
-Download this repository and open **mars-tensile-vault.blend** in **Blender 5.2 LTS or newer**. All model data and image textures are included in the blend file. No add-on, external asset download, or startup script is required.
+Open **mars-tensile-vault.blend** in **Blender 5.2 LTS or newer**. Textures and source meshes are packed. No add-on or script auto-execution is required for ordinary use. The file is saved for Cycles GPU rendering; select a compatible device in Preferences, or use `tools/render.py` for automatic GPU selection with CPU fallback.
 
-The portable file defaults to CPU rendering so it opens on machines without a compatible GPU. Select a GPU in Blender's Cycles preferences, or use the included renderer, which tries supported GPU backends and falls back to CPU:
+- **Frame 1:** afternoon, 15:00.
+- **Frame 120:** night, 22:00; settlement lights turn on automatically.
+- Select **SETTLEMENT • time and district controls** and use Object Properties → Custom Properties for solar hour, exposures, lamp brightness, temperature, L/W stride and phase, checkerboard lighting, district toggles, grass detail, and exterior haze.
+- Choose cameras **01–09** for the valley, civic park, homes, industry, cargo, landing field, and distant exterior view.
 
-```sh
-blender --background --disable-autoexec mars-tensile-vault.blend --python tools/render.py
-```
+![Civic park by day](previews/year15-park-day.png)
+![Civic park at night](previews/year15-park-night.png)
 
-## What is editable?
+## Scene contents
 
-- Anchor counts, spacing, cable and ring dimensions on **TENSILE CAGE**.
-- Pressure-derived roof height, film and reinforcement appearance.
-- Continuous sloped concrete footing and paired clamping plates.
-- Vehicle airlocks: **18 m long, 8 m wide, 6 m high**, with **6.5 m × 5 m hatches** and 6 m access ramps at the default settings.
-- A night-sky toggle, saved off, with separately controlled ring LEDs.
+The rings are 75 m above grade. Three approximately 50 m Starships are preserved inside, with eight crew/cargo ships on exterior pads east of the enclosure. The freight quarter is on that same side, with truck aisles connected to the actual vehicle-airlock positions. Thermal tiles retain their dark material; stainless steel uses a separate procedural finish.
 
-See [the controls guide](docs/CONTROLS.md) and [asset credits](ASSET-CREDITS.md).
+The native cage still supports column count, spacing, height and ring/cable edits. **The district layout, grass footprint, roads and terrain are an editable masterplan for this 50 × 50 configuration; they do not automatically regenerate after changing the cage footprint.**
 
-![Vehicle airlock](previews/vehicle-airlock.png)
-![Matched perimeter clamp](previews/perimeter-clamp.png)
+Grass uses a continuous textured surface plus three tiers of shared blade instances. The default detail distances are 150 m, 600 m and 3,500 m. Concrete, regolith and cable materials use procedural relief and roughness. The exterior atmosphere excludes a clear prism around the habitat. The valley is now about five times wider, with 360° mesas/mountains and a 1,000 km ground extent, so the saved views have no exposed ground edge.
 
-This is a visualization, not a validated habitat structure. The roof reuses a saved pressure-simulation shape; layout edits do not run a new engineering analysis. Airlocks are closed visual assemblies; their membrane penetrations, gaskets, mechanisms and operational sequencing are schematic.
+![Freight yard](previews/year15-cargo-day.png)
+![Landing field](previews/year15-landing-day.png)
 
-The scene contains third-party and owner-supplied assets. See the credits for provenance and applicable reuse information; this repository does not apply a blanket license to all included assets.
+![Exterior night lighting](previews/year15-exterior-night.png)
+![Night valley](previews/year15-valley-night.png)
 
-## Night previews
+The night preset uses 3×3 ring spacing, matched sampled lights, visible airlock apron fixtures, and an adjustable artistic moonlight boost. See the controls guide for the faint reference setting.
 
-The share file includes a packed catalogue star map oriented for Gale Crater, separate day/night exposure, and explicitly sampled ring emitters. See [night controls and sky assumptions](docs/CONTROLS.md#night-rendering).
+See [current controls](docs/YEAR15-CONTROLS.md), [original membrane controls](docs/CONTROLS.md), and [asset credits](ASSET-CREDITS.md). Setup/migration scripts are historical one-time operations; do not rerun them on the completed scene. The render scripts are repeatable.
 
-![Night interior](previews/night-interior.png)
-![Night exterior](previews/night-exterior.png)
-![Sky through membrane](previews/night-roof.png)
-
-## Grass and surface update
-
-Toggle **Grass field** on **SURFACES • grass and lighting controls**. The file includes shared grass-blade instances with camera-distance detail, packed concrete/soil texture maps, transparent modeling-preview film, and 160-degree downward LED beams with faint all-angle glow. See [surface controls](docs/CONTROLS.md#grass-surface-relief-and-wide-ring-lighting).
-
-![Grass field](previews/grass-day.png)
-![Concrete and blades](previews/concrete-grass-detail.png)
-![Wide-beam night lighting](previews/grass-night.png)
-
-The realistic person replacement is pending a blocked asset download; the original figure remains as a temporary scale reference.
+This is an architectural visualization, not a validated pressure structure or landing-site design. The membrane reuses an accepted Cloth-derived shape, not a new structural solve. Building designs, vehicle airlocks, landing clearances and industrial systems are schematic. Time of day is an art-direction control, not an astronomical ephemeris or absolute radiometric calibration.

@@ -12,3 +12,10 @@ assets/sky/*.exr
 
 # Surface image source copies are packed into the blend
 assets/surfaces/*.jpg
+
+# Local scene-development previews
+previews/*-test.png
+
+# Owner-created local lighting variants; the shared master has timeline presets
+mars-tensile-vault_night.blend
+mars-tensile-vault_nightnorooflts.blend

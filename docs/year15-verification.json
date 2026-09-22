@@ -1,0 +1,235 @@
+{
+  "grid": [
+    50,
+    50
+  ],
+  "spacing_m": 50,
+  "ring_height_m": 75,
+  "district_counts": {
+    "Homes": 224,
+    "Warehouses": 193,
+    "Industry and tanks": 20
+  },
+  "ships": [
+    {
+      "name": "Starship Crew",
+      "height_m": 49.96855354309082,
+      "vertices": 100414
+    },
+    {
+      "name": "Starship Cargo",
+      "height_m": 49.96855354309082,
+      "vertices": 55076
+    }
+  ],
+  "landing_pads": [
+    [
+      1750,
+      -800
+    ],
+    [
+      2050,
+      -800
+    ],
+    [
+      2350,
+      -800
+    ],
+    [
+      1750,
+      -400
+    ],
+    [
+      2050,
+      -400
+    ],
+    [
+      2350,
+      -400
+    ],
+    [
+      1750,
+      0
+    ],
+    [
+      2050,
+      0
+    ]
+  ],
+  "grass_cells": 84552,
+  "grass_max_extent_m": 1240,
+  "clamp_min_extent_m": 1332.5,
+  "sky": "Packed NASA 4k catalogue retained; high resolution deferred",
+  "notes": "Concept masterplan; not structural or flight-safety certification. Starships: Anyll Markevich / BlendSwap 27853, CC0. Turf: Poly Haven Leafy Grass, CC0.",
+  "airlock_road_connections": 17,
+  "cargo_clusters": 2394,
+  "cargo_side": "southeast, on east landing-field side",
+  "cargo_airlocks": [
+    [
+      1331.446044921875,
+      -1232.5970458984375,
+      0.0
+    ],
+    [
+      1332.4998779296875,
+      -616.31884765625,
+      0.0
+    ]
+  ],
+  "all_airlock_positions": [
+    [
+      1332.5,
+      0.0,
+      0.0
+    ],
+    [
+      1332.5,
+      616.3218383789062,
+      0.0
+    ],
+    [
+      1331.445556640625,
+      1232.6007080078125,
+      0.0
+    ],
+    [
+      770.4032592773438,
+      1332.5,
+      0.0
+    ],
+    [
+      154.0821533203125,
+      1332.5,
+      0.0
+    ],
+    [
+      -462.2400207519531,
+      1332.5,
+      0.0
+    ],
+    [
+      -1078.5616455078125,
+      1332.5,
+      0.0
+    ],
+    [
+      -1332.4998779296875,
+      924.485595703125,
+      0.0
+    ],
+    [
+      -1332.5,
+      308.1607666015625,
+      0.0
+    ],
+    [
+      -1332.5,
+      -308.1624450683594,
+      0.0
+    ],
+    [
+      -1332.5,
+      -924.483642578125,
+      0.0
+    ],
+    [
+      -1078.5623779296875,
+      -1332.5,
+      0.0
+    ],
+    [
+      -462.23773193359375,
+      -1332.5,
+      0.0
+    ],
+    [
+      154.0863494873047,
+      -1332.5001220703125,
+      0.0
+    ],
+    [
+      770.4083251953125,
+      -1332.5,
+      0.0
+    ],
+    [
+      1331.446044921875,
+      -1232.5970458984375,
+      0.0
+    ],
+    [
+      1332.4998779296875,
+      -616.31884765625,
+      0.0
+    ]
+  ],
+  "lighting_presets": [
+    {
+      "frame": 1,
+      "hour": 15.0,
+      "night": false,
+      "sun_strength": 2.8284270763397217,
+      "exposure": 0.8999999761581421
+    },
+    {
+      "frame": 120,
+      "hour": 22.0,
+      "night": true,
+      "sun_strength": 0.0,
+      "exposure": 3.0
+    }
+  ],
+  "packed_images": true,
+  "invalid_object_drivers": [],
+  "default_active_ring_count": 145,
+  "grass_extents": [
+    -1240.0,
+    -1240.0,
+    1240.0,
+    1240.0
+  ],
+  "home_toggle_verified": true,
+  "ground_width_m": 1000000,
+  "rolling_terrain_width_m": 300000,
+  "mesa_radius_m": [
+    26000,
+    42500
+  ],
+  "mountain_radius_m": [
+    68000,
+    98000
+  ],
+  "ring_sampling": "Disk area sources at visible ring locations; mesh visible to camera/glossy rays",
+  "ring_power_W": 9000,
+  "moon_presentation_boost": 1000,
+  "apron_fixtures": 34,
+  "unused_datablocks_removed": 1,
+  "final_lighting_checks": [
+    {
+      "frame": 1,
+      "active_ring_sources": 0,
+      "moon_hidden_render": false,
+      "moon_hidden_viewport": false,
+      "moon_energy": 0.0,
+      "exposure": 0.8999999761581421
+    },
+    {
+      "frame": 120,
+      "active_ring_sources": 145,
+      "moon_hidden_render": false,
+      "moon_hidden_viewport": false,
+      "moon_energy": 0.029999999329447746,
+      "exposure": 4.0
+    }
+  ],
+  "checkerboard_enabled": true,
+  "moon_visibility_fixed": true,
+  "apron_fixture_header_clearance_m": 1.2,
+  "render_backend": "HIP GPU",
+  "preview_resolution": [
+    1248,
+    702
+  ],
+  "preview_samples": 96,
+  "final_checks": "All referenced images packed, no linked libraries; day/night, ring count, moon visibility and district toggle checks passed. GPU previews inspected."
+}

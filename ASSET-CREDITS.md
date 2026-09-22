@@ -30,3 +30,19 @@ Mars orientation coefficients: NASA/JPL NAIF `pck00010.tpc` (IAU 2009). Kernel c
 ## Ground and concrete texture maps
 
 [Concrete](https://polyhaven.com/a/concrete) and [Aerial Ground Rock](https://polyhaven.com/a/aerial_ground_rock), by Rob Tuytel / Poly Haven, are licensed [CC0](https://polyhaven.com/license). Their 2k diffuse, roughness, and displacement images are packed into the blend. Ground color was adjusted for Mars; displacement images drive bump relief. Grass blades and turf shading are custom geometry/shaders created for this scene.
+
+
+## Standing person
+
+[Standing Man](https://sketchfab.com/3d-models/standing-man-8401da7cb2564fc08681836cbeff39bc) by [zhuoyi0904](https://sketchfab.com/zhuoyi0904), licensed [Creative Commons Attribution 4.0](https://creativecommons.org/licenses/by/4.0/). Downloaded GLB supplied by the project owner. Modified here: static pose, upward neck/head rotation, meter scaling, placement, and roughness adjustments. Model geometry, rig and textures are embedded in the share blend. No endorsement by the asset creator is implied.
+
+
+## Starships
+
+[Space X Starship and Super Heavy (crew + cargo)](https://blendswap.com/blend/27853), by **Anyll Markevich / gallus-gallus**, **CC0**. Source supplied by the project owner; license verified on the source page. Only crew/cargo ships are used, without launch flames or boosters. Geometry was consolidated for instancing; stainless-steel and thermal materials were adapted for the current Cycles version. This is a historical speculative Starship model, not current flight hardware.
+
+## Year-15 turf
+
+[Leafy Grass](https://polyhaven.com/a/leafy_grass), **Charlotte Baglioni / Poly Haven**, **CC0**. Packed 2K diffuse, roughness and normal maps provide distant turf detail; blades are custom shared geometry. The supplied Poliigon grass was tested locally and is **not included** in the final publicly shared blend. Its source files remain untouched in the owner's asset folder.
+
+Year-15 concrete and regolith materials are procedural. Earlier CC0 surface maps remain in legacy data but no longer drive the active concrete/regolith materials. New settlement buildings, roads, mesa geometry and grass LOD meshes were created for this project.

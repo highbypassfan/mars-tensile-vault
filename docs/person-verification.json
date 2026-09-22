@@ -1,0 +1,17 @@
+{
+  "source": "Standing Man by zhuoyi0904, Sketchfab 8401da7cb2564fc08681836cbeff39bc",
+  "license": "https://creativecommons.org/licenses/by/4.0/",
+  "mesh_objects": 10,
+  "height_m": 1.7799999974668026,
+  "feet_z": -0.0020000003278255463,
+  "root_location": [
+    -17.453269958496094,
+    -76.63241577148438,
+    0.009617110714316368
+  ],
+  "old_placeholder_hidden": true,
+  "all_file_images_packed": true,
+  "yaw_radians": 3.6956574909526454,
+  "animation_disabled": true,
+  "facing_away_dot": 1.0
+}

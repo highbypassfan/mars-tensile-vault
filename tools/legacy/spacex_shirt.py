@@ -10,6 +10,10 @@ area of the texture turns black (fold shading kept) and the logo is projected
 onto the back from an empty aligned with the torso.
   blender -b --factory-startup --disable-autoexec in.blend --python-exit-code 1 \
       --python tools/legacy/spacex_shirt.py -- out.blend SpaceX_logo_black.svg
+Logo round trip (edit by hand in its own small file, then swap it in):
+  blender -b --factory-startup --python tools/legacy/spacex_shirt.py -- --edit-logo shirt-logo.blend logo.svg
+  blender -b --factory-startup mars-tensile-vault.blend --python tools/legacy/spacex_shirt.py \\
+      -- --apply-logo shirt-logo.blend out.blend
 """
 import math
 import os
@@ -32,7 +36,7 @@ def flat_material(name, color):
     return m
 
 
-def wordmark_from_svg(svg_path, scene, white, width=1.18, y=0.0):
+def wordmark_from_svg(svg_path, scene, white, width=0.92, y=0.0):
     """Official SpaceX wordmark (Wikimedia Commons SVG), recoloured white and centred."""
     import addon_utils
     addon_utils.enable('io_curve_svg', default_set=False)
@@ -48,7 +52,9 @@ def wordmark_from_svg(svg_path, scene, white, width=1.18, y=0.0):
     xs = [(o.matrix_world @ Vector(c)).x for o in new for c in o.bound_box]
     ys = [(o.matrix_world @ Vector(c)).y for o in new for c in o.bound_box]
     scale = width / (max(xs) - min(xs))
-    cx, cy = (max(xs) + min(xs)) / 2, (max(ys) + min(ys)) / 2
+    # Centre on the letters: in the SVG they fill the lower ~64% of the height
+    # (the swoosh rises above them).
+    cx, cy = (max(xs) + min(xs)) / 2, min(ys) + 0.32 * (max(ys) - min(ys))
     for o in new:
         o.data.materials.clear()
         o.data.materials.append(white)
@@ -61,7 +67,7 @@ def drawn_wordmark(add, white):
     """Fallback when the SVG is not available: text plus a drawn swoosh."""
     txt = D.curves.new('tmp text', 'FONT')
     txt.body = 'SPACEX'
-    for path in (r'C:\Windows\Fontsahnschrift.ttf', r'C:\Windows\Fontsrialbd.ttf'):
+    for path in ('C:/Windows/Fonts/bahnschrift.ttf', 'C:/Windows/Fonts/arialbd.ttf'):
         if os.path.exists(path):
             txt.font = D.fonts.load(path)
             break
@@ -72,9 +78,28 @@ def drawn_wordmark(add, white):
     t.scale.x = 1.25
 
 
-def logo_image(svg_path=None, size=1024):
-    scene = D.scenes.new('tmp • logo render')
-    green, white = flat_material('tmp green', GREEN), flat_material('tmp white', WHITE)
+def empty(name, scene, parent=None, location=(0, 0, 0)):
+    e = D.objects.new(name, None)
+    e.empty_display_type = 'PLAIN_AXES'
+    e.empty_display_size = 0.15
+    e.location = location
+    scene.collection.objects.link(e)
+    if parent:
+        e.parent = parent
+    return e
+
+
+def adopt(child, parent):
+    """Parent without moving (so group empties can be dragged in the editor)."""
+    world = child.matrix_world.copy()
+    child.parent = parent
+    child.matrix_parent_inverse = parent.matrix_world.inverted()
+    child.matrix_world = world
+
+
+def build_logo_scene(scene, svg_path=None):
+    """Clover + wordmark as named objects under group empties, with an ortho camera."""
+    green, white = flat_material('Logo • clover green', GREEN), flat_material('Logo • wordmark white', WHITE)
 
     def add(ob, mat, z=0.0):
         ob.data.materials.append(mat)
@@ -82,54 +107,64 @@ def logo_image(svg_path=None, size=1024):
         scene.collection.objects.link(ob)
         return ob
 
-    def circle(center, r, mat, z=0.0):
-        me = D.meshes.new('tmp circle')
+    def circle(name, center, r, mat, z=0.0):
+        me = D.meshes.new(name)
         n = 64
         verts = [(center[0] + r * math.cos(2 * math.pi * i / n), center[1] + r * math.sin(2 * math.pi * i / n), 0)
                  for i in range(n)]
         me.from_pydata(verts, [], [list(range(n))])
-        return add(D.objects.new('tmp circle', me), mat, z)
+        return add(D.objects.new(name, me), mat, z)
 
-    def poly(points, mat, z=0.0):
-        me = D.meshes.new('tmp poly')
+    def poly(name, points, mat, z=0.0):
+        me = D.meshes.new(name)
         me.from_pydata([(x, y, 0) for x, y in points], [], [list(range(len(points)))])
-        return add(D.objects.new('tmp poly', me), mat, z)
+        return add(D.objects.new(name, me), mat, z)
 
-    # Four heart-shaped leaves, points meeting at the centre, slightly turned.
-    # Each heart: two round lobes plus a triangle down to its tip at the centre.
-    r = 0.185
+    clover = empty('Clover', scene)
+    # Four heart-shaped leaves, points meeting at the centre, slightly turned (12°).
+    # K scales the whole clover.
+    K = 0.75
+    r = 0.185 * K
     for k in range(4):
         rot = Matrix.Rotation(math.radians(12 + 90 * k), 2)
-        lobes = [Vector((side * 0.15, 0.45)) for side in (-1, 1)]
-        for c in lobes:
-            circle(tuple(rot @ c), r, green)
-        tip = Vector((0.0, 0.04))
-        wing = [Vector((-0.315, 0.38)), Vector((0.0, 0.50)), Vector((0.315, 0.38))]
-        poly([tuple(rot @ p) for p in [tip, wing[2], wing[1], wing[0]]], green)
-    circle((0.0, 0.0), 0.13, green)                     # leaves meet solidly at the centre
-    # Stem curving to the lower right.
-    stem = D.curves.new('tmp stem', 'CURVE')
+        leaf = empty(f'Leaf {k + 1}', scene, location=(*(rot @ (Vector((0, 0.3)) * K)), 0))
+        parts = [circle(f'Leaf {k + 1} lobe {i + 1}', tuple(rot @ (Vector((side * 0.15, 0.45)) * K)), r, green)
+                 for i, side in enumerate((-1, 1))]
+        tip = Vector((0.0, 0.04)) * K
+        wing = [Vector((-0.315, 0.38)) * K, Vector((0.0, 0.50)) * K, Vector((0.315, 0.38)) * K]
+        parts.append(poly(f'Leaf {k + 1} body', [tuple(rot @ p) for p in [tip, wing[2], wing[1], wing[0]]], green))
+        bpy.context.view_layer.update()
+        for part in parts:
+            adopt(part, leaf)
+        adopt(leaf, clover)
+    adopt(circle('Centre', (0.0, 0.0), 0.18 * K, green), clover)
+    # Straight stem from the centre out to the lower left, between two leaves.
+    stem = D.curves.new('Stem', 'CURVE')
     stem.dimensions = '2D'
     spline = stem.splines.new('BEZIER')
     spline.bezier_points.add(1)
-    for bp, co, h1, h2 in ((spline.bezier_points[0], (0.02, -0.02), (-0.05, 0.05), (0.06, -0.25)),
-                           (spline.bezier_points[1], (0.36, -0.88), (0.2, -0.62), (0.42, -0.98))):
-        bp.co = (*co, 0)
-        bp.handle_left = (*h1, 0)
-        bp.handle_right = (*h2, 0)
-    stem.bevel_depth = 0.0
-    stem.extrude = 0.0
-    stem.offset = 0.0
+    end = Vector((math.cos(math.radians(236)), math.sin(math.radians(236)))) * 1.05
+    for bp, co, h1, h2 in ((spline.bezier_points[0], (0.0, 0.0), tuple(-end * 0.1), tuple(end * 0.3)),
+                           (spline.bezier_points[1], tuple(end), tuple(end * 0.7), tuple(end * 1.1))):
+        bp.co = (co[0] * K, co[1] * K, 0)
+        bp.handle_left = (h1[0] * K, h1[1] * K, 0)
+        bp.handle_right = (h2[0] * K, h2[1] * K, 0)
     stem.fill_mode = 'BOTH'
     stem.bevel_mode = 'ROUND'
-    stem.bevel_depth = 0.045
-    add(D.objects.new('tmp stem', stem), green)
+    stem.bevel_depth = 0.05 * K
+    adopt(add(D.objects.new('Stem', stem), green), clover)
+    wordmark = empty('SpaceX wordmark', scene)
+    before = set(scene.collection.objects)
     if svg_path and os.path.exists(svg_path):
         wordmark_from_svg(svg_path, scene, white)
     else:
         drawn_wordmark(add, white)
+    bpy.context.view_layer.update()
+    for i, ob in enumerate([o for o in scene.collection.objects if o not in before]):
+        ob.name = f'SpaceX wordmark part {i + 1}'
+        adopt(ob, wordmark)
 
-    cam = D.objects.new('tmp cam', D.cameras.new('tmp cam'))
+    cam = D.objects.new('Logo camera (image area)', D.cameras.new('Logo camera'))
     cam.data.type = 'ORTHO'
     cam.data.ortho_scale = 2.0
     cam.location = (0, 0, 5)
@@ -140,27 +175,54 @@ def logo_image(svg_path=None, size=1024):
     scene.display.shading.color_type = 'MATERIAL'
     scene.render.film_transparent = True
     scene.view_settings.view_transform = 'Standard'
-    scene.render.resolution_x = scene.render.resolution_y = size
+    scene.render.resolution_x = scene.render.resolution_y = 1024
     scene.render.resolution_percentage = 100
     scene.render.image_settings.file_format = 'PNG'
     scene.render.image_settings.color_mode = 'RGBA'
+
+
+def render_logo(scene):
     path = os.path.join(tempfile.gettempdir(), 'spacex_clover_logo.png')
     scene.render.filepath = path
     bpy.ops.render.render(write_still=True, scene=scene.name)
-    for ob in list(scene.collection.objects):
-        data = ob.data
-        D.objects.remove(ob)
-        if data and data.users == 0:
-            (D.meshes if isinstance(data, bpy.types.Mesh) else D.curves if isinstance(data, bpy.types.Curve)
-             else D.cameras).remove(data)
-    D.scenes.remove(scene)
-    for m in (green, white):
-        D.materials.remove(m)
-    img = D.images.load(path)
-    img.name = 'SpaceX clover shirt logo'
+    return path
+
+
+def packed_logo(path):
+    img = D.images.get('SpaceX clover shirt logo')
+    if img is None:
+        img = D.images.load(path)
+        img.name = 'SpaceX clover shirt logo'
+    else:
+        if img.packed_file:
+            img.unpack(method='REMOVE')
+        img.filepath = path
+        img.reload()
     img.pack()
     img.filepath = ''
     return img
+
+
+def remove_scene(scene):
+    for ob in list(scene.collection.objects):
+        data = ob.data
+        D.objects.remove(ob)
+        if data is not None and data.users == 0:
+            for coll in (D.meshes, D.curves, D.cameras):
+                if data.name in coll and coll[data.name] == data:
+                    coll.remove(data)
+                    break
+    D.scenes.remove(scene)
+    for m in [m for m in D.materials if m.name.startswith('Logo •') and m.users == 0]:
+        D.materials.remove(m)
+
+
+def logo_image(svg_path=None):
+    scene = D.scenes.new('tmp • logo render')
+    build_logo_scene(scene, svg_path)
+    path = render_logo(scene)
+    remove_scene(scene)
+    return packed_logo(path)
 
 
 # ---------------------------------------------------------------- projector
@@ -264,8 +326,43 @@ def shirt_material(image, empty, back):
     return m
 
 
+def edit_file(out, svg_path):
+    """Run on an empty factory file: saves the logo as its own small editable blend."""
+    scene = bpy.context.scene
+    for ob in list(scene.objects):
+        D.objects.remove(ob)
+    scene.name = 'Shirt logo'
+    build_logo_scene(scene, svg_path)
+    for screen in D.screens:
+        for area in screen.areas:
+            if area.type == 'VIEW_3D':
+                sp = area.spaces[0]
+                sp.shading.type = 'SOLID'
+                sp.shading.color_type = 'MATERIAL'
+                sp.shading.light = 'FLAT'
+                sp.region_3d.view_perspective = 'CAMERA'
+    bpy.ops.wm.save_as_mainfile(filepath=out)
+    print('LOGO EDITOR SAVED', out, flush=True)
+
+
+def apply_edit(edited, out):
+    """Render the scene of an edited logo file and swap it into the packed shirt image."""
+    with D.libraries.load(edited, link=False) as (src, dst):
+        dst.scenes = ['Shirt logo']
+    scene = dst.scenes[0]
+    path = render_logo(scene)
+    remove_scene(scene)
+    packed_logo(path)
+    bpy.ops.wm.save_as_mainfile(filepath=out, compress=True, relative_remap=False)
+    print('LOGO APPLIED', out, flush=True)
+
+
 def main():
     args = sys.argv[sys.argv.index('--') + 1:]
+    if args[0] == '--edit-logo':          # -- --edit-logo out.blend logo.svg   (run with --factory-startup)
+        return edit_file(args[1], args[2] if len(args) > 2 else None)
+    if args[0] == '--apply-logo':         # -- --apply-logo edited.blend out.blend   (run on the share file)
+        return apply_edit(args[1], args[2])
     image = logo_image(args[1] if len(args) > 1 else None)
     empty, back = projector()
     mat = shirt_material(image, empty, back)

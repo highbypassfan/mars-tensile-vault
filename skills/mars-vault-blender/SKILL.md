@@ -28,6 +28,7 @@ Read `docs/SCENE-TOOLS.md` for the inspection, variant and preview commands in `
 - `Mesh.materials.clear()` resets every face's material index to 0. Set slots before `bm.to_mesh()` (see photoreal_buildings.Shell.finish).
 - Saving a file opened from `renders/` rewrites relative image paths to `//renders/assets/...`, which turns the night sky magenta. After any pipeline started from a backup, reset the sky EXRs to `//assets/sky/<name>` (photoreal_render_settings.py does this) and check with `vault.py inspect`.
 - Render cost (RX 5700 XT, 1080p): ~40 s of scene preparation (scatter evaluation), then ~3 s per sample. GPU memory peaks around 4.3 GB. Slow renders are not memory failures; keep the saved sample count modest.
+- Hair or any curves meant for Cycles must be generated on a **Curves (hair) object** (`bpy.data.hair_curves`); curves output by a Geometry Nodes modifier on a mesh object show in the viewport but did not render in 5.2. The observer's hair (`PERSON • hair strands`, tools/legacy/observer_hair_and_stance.py) grows from the painted-hair area of the head texture.
 - Find cage and membrane objects by unique prefix, because the user renames them.
 - When baking evaluated meshes, resolve material pointers with `mat.original` before releasing the temporary meshes. Dangling evaluated material pointers have crashed Blender.
 - Scripts in `tools/legacy/` are one-time migrations, not repeatable operations.

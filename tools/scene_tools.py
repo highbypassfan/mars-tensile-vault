@@ -10,15 +10,8 @@ import sys
 
 import bpy
 
-
-def json_value(value):
-    if isinstance(value, (str, bool, int, float)) or value is None:
-        return value
-    if hasattr(value, 'to_list'):
-        return value.to_list()
-    if hasattr(value, 'to_dict'):
-        return value.to_dict()
-    return str(value)
+CONTROLS = 'CONTROLS • Mars vault'
+MODIFIER = 'CONTROLS'
 
 
 def resolve(name, objects=None):
@@ -60,48 +53,98 @@ def gpu():
     return 'CPU'
 
 
+class Controls:
+    """The master panel: Geometry Nodes inputs on the CONTROLS object's modifier."""
+
+    def __init__(self):
+        self.obj = bpy.data.objects[CONTROLS]
+        self.mod = self.obj.modifiers[MODIFIER]
+        self.sockets = {}
+        self.panels = {}
+        for item in self.mod.node_group.interface.items_tree:
+            if item.item_type == 'SOCKET' and item.in_out == 'INPUT' and item.socket_type != 'NodeSocketGeometry':
+                self.sockets[item.name] = item
+                self.panels[item.name] = item.parent.name if item.parent else ''
+
+    def get(self, name):
+        return getattr(self.mod.properties.inputs, self.sockets[name].identifier).value
+
+    def set(self, name, value):
+        getattr(self.mod.properties.inputs, self.sockets[name].identifier).value = value
+        self.obj.update_tag()
+
+    def validate(self, name, value):
+        if name not in self.sockets:
+            raise ValueError(f'Unknown control {name!r}; run inspect for the list')
+        sock = self.sockets[name]
+        if sock.socket_type == 'NodeSocketBool':
+            ok = isinstance(value, bool)
+        elif sock.socket_type == 'NodeSocketInt':
+            ok = type(value) is int
+        else:
+            ok = type(value) in (int, float) and math.isfinite(value)
+        if not ok:
+            raise ValueError(f'{name}: wrong value type {type(value).__name__}')
+        if sock.socket_type != 'NodeSocketBool' and not sock.min_value <= value <= sock.max_value:
+            raise ValueError(f'{name}: {value} outside {sock.min_value}..{sock.max_value}')
+
+    def describe(self):
+        out = {}
+        for name, sock in self.sockets.items():
+            entry = {'value': self.get(name), 'description': sock.description}
+            if sock.socket_type != 'NodeSocketBool':
+                entry['min'], entry['max'] = sock.min_value, sock.max_value
+            out.setdefault(self.panels[name], {})[name] = entry
+        return out
+
+
+def evaluate_state():
+    scene = bpy.context.scene
+    bpy.context.view_layer.update()
+    dg = bpy.context.evaluated_depsgraph_get()
+    lights = [o for o in scene.objects if o.type == 'LIGHT']
+    lit, hidden_powered = [], []
+    for obj in lights:
+        ev = obj.evaluated_get(dg)
+        if ev.data.energy > 0 and not ev.hide_render:
+            lit.append(obj.name)
+        elif ev.data.energy > 0:
+            hidden_powered.append(obj.name)
+    return {'exposure': round(scene.view_settings.exposure, 4),
+            'rendered_powered_lights': len(lit),
+            'hidden_powered_lights': hidden_powered}
+
+
 def report():
     scene = bpy.context.scene
-    controls = {}
-    for obj in scene.objects:
-        if obj.type == 'EMPTY' and any(obj.name.startswith(p) for p in ('SETTLEMENT', 'SURFACES', 'LIGHTING')):
-            controls[obj.name] = {
-                k: {'value': json_value(obj[k]), 'ui': obj.id_properties_ui(k).as_dict()}
-                for k in obj.keys() if not k.startswith('_')
-                and isinstance(obj[k], (bool, int, float, str))
-            }
-    missing = []
-    unpacked = []
+    controls = Controls()
+    missing, unpacked = [], []
     for img in bpy.data.images:
         if img.source in {'FILE', 'TILED'} and not img.packed_file and not len(img.packed_files):
             unpacked.append(img.name)
             if not Path(bpy.path.abspath(img.filepath, library=img.library)).exists():
                 missing.append({'image': img.name, 'path': img.filepath})
-    frames = {}
-    original_frame = scene.frame_current
+    states = {}
+    original = controls.get('Night')
     try:
-        for frame in (1, 120):
-            scene.frame_set(frame)
-            bpy.context.view_layer.update()
-            dg = bpy.context.evaluated_depsgraph_get()
-            rings = [o for o in scene.objects if o.type == 'LIGHT' and o.name.startswith('Ring light')]
-            hidden_powered = []
-            for obj in scene.objects:
-                if obj.type != 'LIGHT':
-                    continue
-                ev = obj.evaluated_get(dg)
-                if ev.data.energy > 0 and (ev.hide_render or not obj.visible_get()):
-                    hidden_powered.append(obj.name)
-            frames[str(frame)] = {
-                'exposure': scene.view_settings.exposure,
-                'active_ring_sources': sum(not o.evaluated_get(dg).hide_render and o.evaluated_get(dg).data.energy > 0 for o in rings),
-                'hidden_powered_lights': hidden_powered,
-            }
+        for night in (False, True):
+            controls.set('Night', night)
+            states['night' if night else 'day'] = evaluate_state()
     finally:
-        scene.frame_set(original_frame)
+        controls.set('Night', original)
+    python_drivers = 0
+    owners = [*bpy.data.objects, *bpy.data.node_groups, *bpy.data.scenes, *bpy.data.lights,
+              *[m.node_tree for m in bpy.data.materials if m.node_tree],
+              *[w.node_tree for w in bpy.data.worlds if w.node_tree]]
+    for owner in owners:
+        if owner.animation_data:
+            python_drivers += sum(d.driver.type == 'SCRIPTED' and not d.driver.is_simple_expression
+                                  for d in owner.animation_data.drivers)
     warnings = []
     if missing:
         warnings.append('Missing external images')
+    if python_drivers:
+        warnings.append(f'{python_drivers} drivers need Python auto-execution')
     if bpy.data.libraries:
         warnings.append('Linked libraries must accompany the share file')
     size = Path(bpy.data.filepath).stat().st_size
@@ -117,48 +160,21 @@ def report():
                    'transmission_bounces': scene.cycles.transmission_bounces,
                    'transparent_bounces': scene.cycles.transparent_max_bounces},
         'cameras': [o.name for o in scene.objects if o.type == 'CAMERA'],
-        'controls': controls, 'presets': frames, 'missing_images': missing,
+        'controls': controls.describe(), 'day_night': states, 'missing_images': missing,
         'unpacked_images': unpacked, 'linked_libraries': [l.filepath for l in bpy.data.libraries],
         'warnings': warnings,
     }
 
 
-def apply_changes(path, frame):
-    """Validate every edit before applying any. Keyframe numeric/bool controls."""
-    changes = json.loads(Path(path).read_text(encoding='utf-8-sig'))
-    if not isinstance(changes, dict) or not changes:
-        raise ValueError('Settings must be a nonempty object mapping object names to properties')
-    pending = []
-    for name, properties in changes.items():
-        obj = resolve(name)
-        if not isinstance(properties, dict):
-            raise ValueError(f'{name}: expected property mapping')
-        for key, value in properties.items():
-            if key not in obj or key.startswith('_'):
-                raise ValueError(f'{obj.name}: unknown control {key}')
-            old = obj[key]
-            if isinstance(old, bool):
-                valid = isinstance(value, bool)
-            elif isinstance(old, int):
-                valid = type(value) is int
-            elif isinstance(old, float):
-                valid = type(value) in (float, int) and math.isfinite(value)
-            else:
-                valid = False
-            if not valid:
-                raise ValueError(f'{key}: expected {type(old).__name__} numeric/bool value')
-            ui = obj.id_properties_ui(key).as_dict()
-            if value < ui.get('min', -math.inf) or value > ui.get('max', math.inf):
-                raise ValueError(f'{key}: value outside stored UI limits')
-            data_path = '[' + json.dumps(key, ensure_ascii=False) + ']'
-            if obj.animation_data and any(d.data_path == data_path for d in obj.animation_data.drivers):
-                raise ValueError(f'{key}: driven property; edit its source control instead')
-            pending.append((obj, key, value, data_path))
-    for obj, key, value, data_path in pending:
-        obj[key] = value
-        obj.keyframe_insert(data_path=data_path, frame=frame)
-        obj.update_tag()
-    bpy.context.scene.frame_set(frame)
+def apply_changes(changes):
+    """Validate every edit before applying any. Values are set directly (no keyframes)."""
+    controls = Controls()
+    if not isinstance(changes, dict):
+        raise ValueError('Settings must be an object mapping control names to values')
+    for name, value in changes.items():
+        controls.validate(name, value)
+    for name, value in changes.items():
+        controls.set(name, value)
     bpy.context.view_layer.update()
 
 
@@ -166,8 +182,10 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('action', choices=('inspect', 'variant', 'preview'))
     parser.add_argument('--output', required=True)
-    parser.add_argument('--settings', help='JSON object mapping object names/prefixes to custom properties')
-    parser.add_argument('--frame', type=int, default=1)
+    parser.add_argument('--settings', help='JSON file mapping control names to values')
+    time = parser.add_mutually_exclusive_group()
+    time.add_argument('--night', action='store_true', help='Shortcut for {"Night": true}')
+    time.add_argument('--day', action='store_true', help='Shortcut for {"Night": false}')
     parser.add_argument('--camera', help='Exact camera name or unique prefix, e.g. 08')
     parser.add_argument('--samples', type=int, default=32)
     parser.add_argument('--width', type=int, default=960)
@@ -178,14 +196,16 @@ def main():
         target.write_text(json.dumps(report(), indent=2, ensure_ascii=False), encoding='utf-8')
     else:
         target = output_path(args.output, '.blend' if args.action == 'variant' else '.png')
-        scene.frame_set(args.frame)
-        if args.settings:
-            apply_changes(args.settings, args.frame)
+        changes = json.loads(Path(args.settings).read_text(encoding='utf-8-sig')) if args.settings else {}
+        if args.night or args.day:
+            changes['Night'] = args.night
+        if changes:
+            apply_changes(changes)
         if args.camera:
             scene.camera = resolve(args.camera, [o for o in scene.objects if o.type == 'CAMERA'])
         if args.action == 'variant':
-            if not args.settings:
-                raise ValueError('variant requires --settings')
+            if not changes and not args.camera:
+                raise ValueError('variant needs --settings, --night/--day or --camera')
             bpy.ops.wm.save_as_mainfile(filepath=str(target), compress=True)
         else:
             if not 1 <= args.samples <= 4096 or not 64 <= args.width <= 16384:

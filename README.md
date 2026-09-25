@@ -1,41 +1,72 @@
 # Mars Tensile Vault — year 15
 
-An editable Blender concept of a 50 × 50-column Mars settlement at 50 m spacing, in an open valley surrounded by distant mesas. The original pressure-derived membrane and perimeter remain live; the year-15 masterplan adds homes, factory halls, utilities, freight, and landed Starships.
+An editable Blender concept of a Mars settlement under a tensile vault, after Casey Handmer's proposal: a Kevlar-reinforced ETFE membrane held down by a 50 × 50 grid of cable anchors at 50 m spacing, with the roof rings 200 m above the ground. The year-15 masterplan inside adds detailed homes, residential towers, factory halls, a stacked freight yard, a battery substation, thousands of residents and landed Starships. Outside, a 34 km² solar farm powers it, in a rock-strewn valley surrounded by distant mesas.
 
-> The included preview images predate the 200 m roof, tower and landing-field update. They have not been re-rendered.
+![Habitat from the mesa](previews/year15-mesa-day.png)
 
-![Valley masterplan](previews/year15-valley-day.png)
+## Quick start
 
-## Open and render
+1. Open **mars-tensile-vault.blend** in **Blender 5.2 LTS or newer**. Keep the `assets/sky` folder beside it (the night-sky EXRs are external files); clone or download the whole repository. No script auto-execution is needed.
+2. **CONTROLS • Mars vault** is already selected. The **Modifier tab** (wrench) shows every scene control in collapsible sections.
+3. **Tick `Night` for night, untick it for day.** That one checkbox switches the sky, Sun, exposure, ring LEDs, apron floods and lit windows. The timeline plays no part.
+4. Pick camera **01–13** and render (F12). The file is set up for Cycles GPU; choose your device in Preferences, or run `tools/render.py`. Expect several minutes per 1080p frame on a mid-range GPU (about 6 minutes on an RX 5700 XT at the saved 128 samples). The first ~40 s is scene preparation, not a hang. Switch the viewport out of Rendered mode before pressing F12 so the GPU isn't holding two copies of the scene. If your GPU driver is unstable under long renders, set Render → Device to CPU. An 8-core Ryzen renders the 65% README previews in about 3 minutes each, and the scene fits comfortably in 32 GB of RAM.
 
-Open **mars-tensile-vault.blend** in **Blender 5.2 LTS or newer**. Textures and source meshes are packed. No add-on or script auto-execution is required for ordinary use. The file is saved for Cycles GPU rendering; select a compatible device in Preferences, or use `tools/render.py` for automatic GPU selection with CPU fallback.
+| Section | Holds |
+|---|---|
+| Time of day | **Night**, day solar hour, sun and sky strength, day and night exposure |
+| Sky and atmosphere | Mars blue aureole, skybox mountains, stars, Milky Way, exterior haze, dust storm |
+| Moon (Phobos) | Fill light, presentation boost, position, disk |
+| Habitat lights (night) | LED glow and power, colour temperature, which rings are lit, beam, airlock floods |
+| Districts | Homes, warehouses, industry, cargo yard, Starships, grass, people, rock field, solar farm and power |
+| Grass detail | Distance LOD and density |
+| Membrane optics | ETFE film IOR, haze, reflections, Kevlar translucency |
+| Viewport performance | Coarse anchors in the viewport (renders keep full detail) |
 
-- **Frame 1:** afternoon, 15:00.
-- **Frame 120:** night, 22:00; settlement lights turn on automatically.
-- Select **SETTLEMENT • time and district controls** and use Object Properties → Custom Properties for solar hour, exposures, lamp brightness, temperature, L/W stride and phase, checkerboard lighting, district toggles, grass detail, and exterior haze.
-- Choose cameras **01–09** for the valley, civic park, homes, industry, cargo, landing field, and distant exterior view.
+Structure is edited on two geometry objects, also in the Modifier tab: **TENSILE CAGE** (grid, spacing, height, anchors, cables) and **MEMBRANE** (concrete pad, clamps, Kevlar, airlocks). They are kept apart from the look controls because re-evaluating the membrane takes a few seconds.
+
+Full details are in **[docs/CONTROLS.md](docs/CONTROLS.md)**.
 
 ![Civic park by day](previews/year15-park-day.png)
 ![Civic park at night](previews/year15-park-night.png)
 
-## Scene contents
+## What's in the scene
 
-Reusable inspection, safe variant creation and single-camera previews are available through `python tools/vault.py`. See [Scene tools](docs/SCENE-TOOLS.md) for commands and settings examples. A project-specific Codex skill is included in `skills/mars-vault-blender`.
+- **Membrane:** a smoothed Cloth pressure result cut to a 50 m bay and repeated. Its welded panels, four-ply collars around the ring inserts and Kevlar reinforcement all follow the live cage. It is a reusable pressure-derived shape, not a new structural solve for each edit.
+- **Wall welds:** the wall is tiled from welded panels. Horizontal welds run continuously round the corners, and the corner's vertical welds fan radially from the corner anchor, so every reinforcement line tees into an anchor. Corner panels taper towards the top.
+- **Perimeter:** a continuous concrete pad and double clamping plates with bolt rows, following the rounded corners, plus 18 × 8 × 6 m vehicle airlocks.
+- **Buildings:** three-storey homes with recessed, framed windows, precast panel facades in varied tints, floor bands, glass balconies, entrance canopies and rooftop PV and plant. Six residential towers of 24–38 storeys (82–130 m) use the same generator. Factory halls have ribbed metal cladding. At night, windows light up at random with warm or cool interiors.
+- **Settlement:** factory halls, tanks, three heritage Starships inside, and eight crew/cargo ships on pads 2 km east, reached by a compacted-regolith road.
+- **Freight yard:** forklift-spaced pallet blocks stacked 2–4 high: wrapped equipment, drums, rolled steel plate, pipe bundles, bulk bags, sintered-regolith bricks and aluminium ingots, with forklifts in the aisles.
+- **People:** about 8,000 residents and workers standing, walking or looking up at the roof, on walkways, streets and park turf. They are static poses of the embedded rigged figure, with varied clothing and skin.
+- **Power:** a 5.8 km square solar farm to the west, made of low east/west tent rows laid on the terrain, with access tracks and inverter skids (collectors assumed buried). It feeds a substation on the farm edge. A surface-laid HV cable on sleepers runs to a duct vault at the west wall, then underground to a battery substation inside the dome, under the sloping west wall.
+- **Grass:** shared blade instances in three distance tiers that fade to a textured turf surface, never realised.
+- **Sky:** a butterscotch day sky with a faint blue aureole around the Sun (as seen from Mars) and hazy procedural ranges on the far horizon. The night sky is NASA's 16k star catalogue, oriented for Gale Crater, with the Milky Way.
+- **Landscape:** procedural Mars ground (dust and basalt-sand patches, wind ripples, gravel) with about a million real rock instances outside the walls, stratified mesas 26–42 km away, a mountain chain at 68–98 km and 1,000 km of ground.
 
-The rings are 200 m above grade. Six 72–130 m residential towers occupy existing plots. Three approximately 50 m Starships are preserved inside, with eight crew/cargo ships on exterior pads shifted 2 km east, with one dark-brown compacted-regolith trunk road to the eastern freight airlock. The freight quarter is on that same side, with truck aisles connected to the actual vehicle-airlock positions. Thermal tiles retain their dark material; stainless steel uses a separate procedural finish.
+**The cage is parametric, but the masterplan is fixed to the 50 × 50 footprint:** districts, roads, grass masks and fixtures do not regenerate when the cage is resized.
 
-The native cage still supports column count, spacing, height and ring/cable edits. **The district layout, grass footprint, roads and terrain are an editable masterplan for this 50 × 50 configuration; they do not automatically regenerate after changing the cage footprint.**
-
-Grass uses a continuous textured surface plus three tiers of shared blade instances. The default detail distances are 150 m, 600 m and 3,500 m. Concrete, regolith and cable materials use procedural relief and roughness. The exterior atmosphere excludes a clear prism around the habitat. The valley is now about five times wider, with 360° mesas/mountains and a 1,000 km ground extent, so the saved views have no exposed ground edge.
-
+![Homes and a residential tower](previews/year15-towers-day.png)
+![Homes at night](previews/year15-towers-night.png)
+![Freight yard forklift aisle](previews/year15-freight-aisle-day.png)
 ![Freight yard](previews/year15-cargo-day.png)
+![Solar farm and its substation](previews/year15-solar-farm-day.png)
+![Battery substation under the west wall](previews/year15-battery-substation-day.png)
 ![Landing field](previews/year15-landing-day.png)
-
-![Exterior night lighting](previews/year15-exterior-night.png)
 ![Night valley](previews/year15-valley-night.png)
+![Airlock apron at night](previews/year15-exterior-night.png)
 
-The night preset uses 3×3 ring spacing, matched sampled lights, visible airlock apron fixtures, and an adjustable artistic moonlight boost. See the controls guide for the faint reference setting.
+## Tools
 
-See [current controls](docs/YEAR15-CONTROLS.md), [original membrane controls](docs/CONTROLS.md), and [asset credits](ASSET-CREDITS.md). Setup/migration scripts are historical one-time operations; do not rerun them on the completed scene. The render scripts are repeatable.
+Run these with ordinary Python from the repository folder; they drive a background Blender and never overwrite the input:
 
-This is an architectural visualization, not a validated pressure structure or landing-site design. The membrane reuses an accepted Cloth-derived shape, not a new structural solve. Building designs, vehicle airlocks, landing clearances and industrial systems are schematic. Time of day is an art-direction control, not an astronomical ephemeris or absolute radiometric calibration.
+```
+python tools/vault.py inspect --output renders/report.json
+python tools/vault.py preview --camera 02 --night --output renders/park-night.png
+python tools/vault.py variant --settings my-look.json --output renders/my-look.blend
+```
+
+See [docs/SCENE-TOOLS.md](docs/SCENE-TOOLS.md). `tools/render_previews.py` re-renders the images above. `tools/legacy/` holds the one-time scripts that built this file (the `photoreal_*` scripts are the latest pass, listed in order in `docs/CONTROLS.md`); they are kept for reference and are not meant to be rerun on the finished file.
+
+## Credits and caveats
+
+See [ASSET-CREDITS.md](ASSET-CREDITS.md). This is a concept visualization, not a validated pressure structure or landing-site design. Building designs, airlocks and landing clearances are schematic. Lighting and sky are art-directed approximations, not radiometric calibrations or an ephemeris.

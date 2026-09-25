@@ -1,81 +1,148 @@
-> The year-15 scene supersedes the older lighting, grass, dimensions and surface settings below. Use [YEAR15-CONTROLS.md](YEAR15-CONTROLS.md) for the current master controls. The original membrane/foundation controls remain available.
+# Controls reference
 
-# Pressure-derived membrane and perimeter foundation
+Everything is edited in three places, all in the **Modifier tab** (wrench icon) of the Properties editor:
 
-The active object is MEMBRANE • pressure-derived panels and perimeter foundation. Its roof samples a saved, smoothed Cloth result cut to a 50 m square bay. Opposite edges were conditioned symmetrically for repetition (the original mismatch was at most 6.7 cm). This uses the earlier pressure result rather than a new sine function. Changes to column count, spacing, cap diameter and height remain live through the original cage modifier. The transition at each metal ring is re-seated locally to avoid a gap caused by smoothing the saved pressure result.
+| Object (Outliner) | Modifier | What it controls |
+|---|---|---|
+| **CONTROLS • Mars vault** | CONTROLS | Look of the scene: day/night, sky, lights, districts, grass, film optics, viewport speed |
+| **TENSILE CAGE & GROUND ETC** | PARAMETERS • edit here | Structure: column grid, spacing, height, anchors, cables, ring LEDs |
+| **MEMBRANE • pressure-derived panels…** | LIVE • follows original cage controls | Membrane and foundation detail: concrete pad, clamps, Kevlar, airlocks |
 
-The actual cropped source mesh and the repeatable height field remain stored in the file. This is a reusable pressure-derived shape, not a newly solved pressure equilibrium for every grid or spacing edit.
+The blend opens with CONTROLS selected. Structure is kept separate because re-evaluating the membrane takes a few seconds; look controls update almost instantly.
 
-## Film and panel layout
+No Python auto-execution is needed. All drivers are simple expressions and nothing is keyframed. The timeline is not used for day and night.
 
-- Film haze is 0.055 and per-ply transmission 0.98 for a slightly milkier appearance. These remain on the original cage modifier.
-- Straight wall bays align to the relevant anchor rows on each side. The phase is calculated separately on north/south and east/west walls.
-- Each rounded corner is one continuous panel. Its broad welded seams occur only at its two vertical boundaries; horizontal panel seams do not cross the corner. The fine reinforcement weave remains visible throughout.
-- The lowest 5 m measured along the wall above its clamping termination use four effective film plies. At the default 0.3 mm ply setting this represents a 1.2 mm laminate in the optical model; the film remains a thin display surface.
-- Ring inserts and their surrounding collars retain four-ply optics. The collar width is an approximate surface-distance treatment, not a fabricated cutting pattern.
+## CONTROLS • Mars vault
 
-## Continuous ground anchorage geometry
+### Time of day
 
-Select the active membrane object > Object Properties > Custom Properties:
+| Control | Default | Notes |
+|---|---:|---|
+| **Night** | off | **The single day/night switch.** It switches the world to the star catalogue, turns off the Sun, lights the ring LEDs, apron floods, windows and Phobos fill, and swaps exposure. |
+| Day solar hour | 15 | Sun position in daytime (12 = noon). Sunlight fades to zero at 06:00 and 18:00. It has no effect at night. |
+| Sun strength / Day sky strength | 4 / 0.85 | Direct and diffuse daylight |
+| Day exposure / Night exposure | +0.9 / +4 EV | Photographic exposure for each state |
 
-- Concrete pad width m: 6 m default; changes the total footprint width.
-- Concrete crest width m: 0.8 m default.
-- Concrete pad height m: 1 m default; the pad slopes to ground on both sides.
-- Clamp band height m: 0.5 m default.
-- Clamp plate thickness m: 0.06 m default for each of two plates.
-- Clamp gap m: 0.03 m default; the wall sits on its centre plane and terminates inside the band.
-- Ground reinforcement strip m: 5 m default, measured along the curved wall.
+### Sky and atmosphere
 
-The same cross-section follows the full perimeter, including corners. Two rows of hexagonal bolt heads at 1 m spacing represent the plate fastenings. The concrete, plate thicknesses and fastener sizes are adjustable visual geometry, not an engineered anchorage capacity for the habitat pressure loads. Concrete reinforcement, buried anchorage, bolt preload and waterproof gasket design are not calculated here.
+| Control | Default | Notes |
+|---|---:|---|
+| Day sky blue | 0.35 | A faint bluish zenith and the **blue aureole around the Sun** seen from Mars. It works in two places: the world sky, and a forward-scattering blue lobe in the exterior dust, which is where the real effect comes from. 0 gives a pure butterscotch sky. |
+| Skybox mountains | on | Procedural distant ranges on the horizon, beyond the modelled mesas. They are hazy by day and a dark silhouette against the stars at night. |
+| Skybox mountain height deg | 4.2 | Tallest peak above the horizon. The modelled mesas rise about 2° in the ground-level views, so smaller values hide the skybox ranges behind them. |
+| Skybox mountain haze | 0.5 | How far the ranges fade into the sky colour (1 = invisible) |
+| Night sky strength | 0.08 | Overall catalogue sky gain, including its contribution to lighting |
+| Star foreground gain / Milky Way gain | 0.55 / 0.32 | The 16k bright-star layer and the 4k extended background, independently |
+| Exterior haze / Haze density | on / 5e-6 | Dust volume outside the habitat only; the interior stays clear. 5e-6 gives a clear day with soft aerial perspective; about 1.5e-5 gives a dusty afternoon. |
+| Dust storm | off | Multiplies haze density by 13 |
 
-Saved inspection cameras: Pressure panels • restored view; Perimeter clamp • straight section; Perimeter clamp • continuous corner; Clamp • close construction detail.
+### Moon (Phobos)
 
-Ground, rover, worker, cargo and night toggle from the previous version are preserved. The night environment remains disabled.
+Moon fill, Moon fill strength, **Moon presentation boost** (1000; set 1 for the faint physical reference), Moon azimuth/altitude deg, and Show Phobos disk (an illustrative 0.18° disk). The boost is artistic, not calibrated Phobos illumination.
 
-## Vehicle airlocks and matched outer radius
+### Habitat lights (night)
 
-The membrane and clamp use the same 1,024 perimeter samples. At the default layout their termination centrelines were checked at every sample, including corners, with a maximum deviation of 0.031 mm. The 30 mm space between the paired plates is intentional; the membrane lies on the middle plane.
+| Control | Default | Notes |
+|---|---:|---|
+| Habitat lights | on | Master switch for ring lighting |
+| LED brightness | 550 | Visible glow of the LED strips. It also drives the cage's hidden LED Strength input. |
+| Ring light power W | 9000 | Actual illumination per active ring, independent of the visible glow |
+| LED temperature K | 3900 | Blackbody colour for the rings and apron floods |
+| LED every L / W | 3 / 3 | Light every Nth ring in each direction |
+| LED phase L / W | 0 / 0 | Offset of the selected rows and columns |
+| LED checkerboard | on | Also keep only alternating L+W parity (145 of the 289 3×3 positions) |
+| LED beam angle deg / beam gain / ambient glow fraction | 160 / 1.6 / 0.08 | Downward cone, brightness scale, faint all-angle glow |
+| Ring mesh illumination gain | 1 | Converts ring power to mesh radiance (artistic calibration) |
+| Annular ring lighting | on | The LED ring meshes emit. Off restores the older sampled disk lights. |
+| Airlock apron lights / Apron light power W | on / 1800 | Visible exterior floods at the vehicle airlocks |
 
-Vehicle airlocks are generated by the active membrane/foundation object. Toggle its Vehicle airlocks custom property. Set Airlock Length, Width, Height, Spacing and Embed on the original TENSILE CAGE modifier; the old Show Airlocks checkbox refers to the retired small airlocks and remains off. The new airlocks follow the corrected clamp centreline. Default chamber size is 18 × 8 × 6 m, hatch width/height 6.5 × 5 m, and ramp length 6 m. The concrete toe extends 0.35 m below nominal ground to meet the terrain cleanly.
+### Districts
 
-## Night rendering
+Visibility toggles for Homes, Warehouses, Industry and tanks, Cargo yard (the stacked freight yard), Starships, Grass areas, **People**, **Rock field** and **Solar farm and power**. Buildings share mesh data; use Make Single User before editing one instance.
 
-Select LIGHTING • toggle Night sky and enable Night sky under Custom Properties. It switches the world to procedural stars and turns off daytime lights. Ring LEDs remain controlled by the original cage. Night sky is saved off.
+### Grass detail
 
-## Portability
+Near / Mid / Far grass distance m (150 / 600 / 3,500) and Grass density multiplier. Near uses 96-blade clumps, Mid 12-blade and Far 4-blade; beyond Far, only the textured turf surface remains. Distances are measured from the render camera. Keep Near < Mid < Far. Instances are never realised.
 
-All textures and referenced Geometry Nodes source meshes are packed or stored in the blend file. The optional tools/render.py script chooses a supported GPU or uses CPU, renders the active camera, and writes renders/render.png. The scene does not require executing embedded Python. Legacy construction scripts, local logs, machine preferences and prior blend backups are not part of this package.
+### Membrane optics
 
-## Night rendering
+Film IOR (1.4), Film haze per ply, Film reflection roughness and strength, and Aramid translucency (the Kevlar bundles). This is a thin-sheet approximation of a free-standing ETFE laminate, not measured ETFE optical data.
 
-Select `LIGHTING • toggle Night sky` and open Custom Properties:
+### Viewport performance
 
-- **Night sky** switches the world, suns, and exposure together.
-- **Night exposure EV** defaults to +3.25. Day exposure is +0.75 after the surface-lighting update.
-- **Night sky gain** defaults to 0.2 and adjusts the catalogue sky's radiance, including its contribution to lighting.
-- Ring **LED Strength** remains 200 on the cage modifier. Mesh emission now samples both sides explicitly. Cycles uses eight diffuse bounces, 32 total/transmission bounces, and 96 transparent crossings; indirect clamping is disabled.
+Viewport tether LOD (on), every L / W (2 / 2), branches, sides and ring segments. These affect interactive viewports only; final renders always use full detail. The default shows 625 of the 2,500 anchors with about 96% fewer anchor faces.
 
-The saved scene uses GPU rendering. `tools/render.py` selects an available GPU and falls back to CPU on machines without a supported device. A bright visible LED surface is not a measure of ground illuminance: these narrow rings are about 50 m above the floor. The night exposure reveals their illumination without adding hidden fill lights.
+## Scene detail objects
 
-The sky is NASA SVS Deep Star Maps 2020, packed inside the blend. It contains catalogue stars, the Milky Way and Magellanic Clouds. Distant stellar directions are effectively the same from Mars and Earth; local orientation is what changes. The example uses Gale Crater, planetocentric latitude -4.59 degrees, east longitude 137.44 degrees, at 2026-09-20 00:00 UTC. World +X is east, +Y north, +Z up.
+Each has its own small modifier for tuning. All use shared instances, which are never realised, and show only a fraction in the viewport.
 
-Orientation uses the IAU 2009 Mars rotation polynomial from NAIF pck00010, with TT approximating TDB and UTC+69.184 seconds. It is a visualization, not a current precision ephemeris. No Sun, planets, Phobos or Deimos are included in this distant-sky map; the night toggle does not calculate sunset. The map is not calibrated in absolute physical radiance, so its gain and photographic exposure remain adjustable. Bright lamps and membrane scattering reduce visible stellar contrast.
+| Object | Modifier inputs |
+|---|---|
+| People • residents and workers | Walkway / street / park people per m² (0.006 / 0.002 / 0.003, about 8,000 people), viewport fraction |
+| Rock field • scattered basalt cobbles and boulders | Density per m² (0.02, about a million rocks over 10 × 10 km), viewport fraction, max size |
+| Freight yard • stacked pallet blocks and forklifts | Viewport fraction. The layout is a baked point cloud: each point has a `kind` (0–9: wrapped ×2, drums, steel, pipe, bags, bricks, ingots, forklift, loaded forklift) and a `yaw` attribute |
+| Solar farm • east-west PV rows and inverter skids | Viewport fraction. Rows follow the terrain by raycast; tracks every 500 m plus a central spine |
 
-Sky coordinates and epoch are recorded on the lighting control. To change their orientation, edit these properties and run `tools/setup_night.py` in Blender, then reopen the saved file. Exposure, gain and the day/night toggle update normally without scripts. Normal use requires no Python auto-execution or external textures. The local-to-J2000 matrix is recorded in `docs/sky-orientation.json`.
+The people are four baked poses of the embedded rigged figure (standing, looking up, two walking strides; `tools/legacy/people_poses.py`). Clothing and skin vary per instance through the shader's Object Info → Random. The original rig, **PERSON RIG**, is still editable for close-up shots.
 
-## Grass, surface relief, and wide ring lighting
+## Buildings
 
-Select **SURFACES • grass and lighting controls**, then Object Properties > Custom Properties.
+`photoreal_buildings.py` generates the shared building meshes. Editing **SOURCE • three storey residential** changes all 218 homes, and the three **SOURCE • residential tower** meshes are shared by the six towers. Facade colour varies per building through Object Info → Random in **Colony • ceramic coated facade**. Lit windows use a per-pane `window_seed` face attribute in **Colony • window glazing**, whose Emission Strength is still driven by Night. The halls use **Colony • ribbed metal cladding**.
 
-- **Grass field** switches the existing prepared ground between regolith and turf. The soil datum and ground geometry do not move. Blades grow above that datum.
-- **Grass blade height m**: 0.14 m default. **Grass clumps per m2**: 6 default. Each instance references the same 96-blade clump mesh, without realizing copies. **Grass detail distance m**: 65 m from the active render camera, with a 20 m density fade to textured turf. **Viewport grass fraction**: 0.12. Increase distance for low-angle, long-lens shots if the transition becomes visible.
-- The grass footprint follows live column spacing/count and the rounded enclosure, stopping inside the perimeter concrete. The footing bases have small grass clearances. Dense close-up detail is camera-dependent; the distant lawn uses a surface shader.
-- **Concrete relief m**: 0.008; **Soil relief m**: 0.025. These control texture-driven bump relief, not geometric displacement. Silhouettes and the ground datum remain unchanged. Poly Haven image maps supply color, roughness and height, with fine procedural grain. Maps are packed in the blend. Ground maps are recolored for Mars.
-- **LED full beam angle deg**: now 160 degrees total, centered downwards, with softened beam edges. **LED ambient glow fraction**: 0.08 retains faint emission from all other directions. **LED beam gain**: 1.6 scales brightness while preserving the cage's LED Strength value of 200. Directionality is evaluated on the actual emitting arc surfaces; no proxy lights are added. Day exposure is now +0.75 EV; night remains +3.25 EV.
-- **Clear modeling membrane** uses a very transparent preview material only on membrane faces. Layout and Modeling open in Material Preview; steel and concrete remain solid. Final Cycles renders retain the full membrane shader. Solid viewport mode does not evaluate transparency shaders.
+## Structure: TENSILE CAGE modifier
 
-Validation: grass on/off produced identical ground mesh coordinates and vertex count; blade instance count increased when enabled. All texture images remained packed. Previews were rendered using HIP GPU.
+Panels 01–06 set the grid (50 × 50 anchors at 50 m), roof height (200 m), perimeter profile and corners, anchor parts, rims and ground, and airlock size and spacing. Further panels cover cable hardware, roof-cap reinforcement, pressure and cable sizing, ring LEDs, and square-panel membrane film. Panels 07–08 are legacy features that are switched off.
 
-The realistic, rigged [Standing Man by zhuoyi0904](https://sketchfab.com/3d-models/standing-man-8401da7cb2564fc08681836cbeff39bc) is now embedded, with textures packed. The person stands 1.78 m tall beside Curiosity, faces away from the rover inspection camera, and looks upward through a 34-degree combined neck/head adjustment. Select **PERSON RIG • editable head and neck pose** to change the pose in Pose Mode. Imported animation was frozen into a static stance. The original figure is preserved in the hidden **ARCHIVE • original placeholder worker** collection.
+The membrane samples a saved, smoothed Cloth pressure result cut to a 50 m bay. It is a reusable pressure-derived shape, not a new structural solve for each edit. Changes to column count, spacing, cap diameter and height stay live.
 
-The setup/migration scripts in tools are for reproducing changes from the preceding revision, not for repeatedly rebuilding the current file. Ordinary controls work natively without running scripts.
+**The city masterplan is fixed to the 50 × 50 footprint.** Districts, roads, grass masks, the haze cavity and apron fixtures do not regenerate when the cage is resized.
+
+## Membrane and foundation: MEMBRANE modifier
+
+Only the membrane's own inputs are shown; inputs that mirror the cage are hidden and driven.
+
+| Input | Default |
+|---|---:|
+| Roof rise m | 12.5 |
+| Collar surface width m | 1.0 (four-ply collar around each ring insert) |
+| Kevlar pitch m / Kevlar width m | 0.65 / 0.035 |
+| Concrete pad width / crest width / pad height m | 6 / 0.8 / 1 |
+| Clamp band height / plate thickness / gap m | 0.5 / 0.06 / 0.03 |
+| Ground reinforcement strip m | 5 (four-ply band above the clamp) |
+| Vehicle airlocks | on (size and spacing come from the cage's Airlock panel) |
+| Clear viewport membrane | on (nearly transparent membrane in Material Preview; renders unaffected) |
+
+**Welds:** the wall is tiled from welded panels. Vertical welds on the straight walls sit on the anchor rows. Horizontal welds come every Spacing W of profile arc length and continue round the corners. Each corner's vertical welds fan radially from the corner anchor, with their count chosen to keep ground-level panels about Spacing L wide, so the corner panels taper upward and every reinforcement line tees into an anchor.
+
+The same clamp cross-section follows the full perimeter, including corners, with two rows of bolt heads at 1 m spacing. The membrane and clamp share 1,024 perimeter samples, with a maximum centreline deviation of 0.031 mm. This is visual geometry, not an engineered anchorage.
+
+## Cameras
+
+01 valley and landing field · 02 civic park and heritage ships · 03 residential boulevard · 04 industrial district · 05 cargo yard · 06 landing field · 07 habitat from mesa · 08 exterior apron and freight airlock · 09 night habitat from the valley · 10 solar farm and battery substation · 11 battery substation and HV cable · 12 freight yard forklift aisle · 13 homes and residential tower. All work in both day and night. Older inspection cameras are in the ARCHIVE collection.
+
+## Rendering
+
+Cycles GPU, 128 samples, adaptive sampling (noise threshold 0.03), denoising, 32 total and transmission bounces, 8 diffuse bounces, and 96 transparent crossings, at 1920 × 1080. `tools/render.py` picks a GPU (OptiX, CUDA, HIP, Metal or oneAPI) and falls back to CPU.
+
+Performance: peak GPU memory is about 4.3 GB. On an RX 5700 XT a 1080p frame spends ~40 s preparing the scene (the scatters are evaluated at full density) and then ~3 s per sample. Don't keep a viewport in Rendered mode while rendering with F12 on an 8 GB card. Raise Max Samples for final stills if the denoised result is blotchy. CPU rendering works (the scene fits easily in 32 GB of RAM) but is several times slower than a mid-range GPU.
+
+## Sky orientation
+
+The night sky is NASA SVS Deep Star Maps 2020, oriented for Gale Crater (−4.59° latitude, 137.44° E) at 2026-09-20 00:00 UTC using the IAU 2009 rotation (NAIF pck00010). The matrix is in `docs/sky-orientation.json`. Night does not compute a star ephemeris, and the map is not radiometrically calibrated. The two EXRs in `assets/sky` are external files and must stay beside the blend.
+
+## Landscape
+
+The ground material (Mars • compacted ochre regolith) is procedural in world space: kilometre-scale dust and basalt-sand patches, darker drifts, grain, wind ripples, fine gravel and slope darkening. Larger stones are real instanced rocks. The mesas, ridges and boulders (Mesa • layered sedimentary stone) use noise-warped strata, laminae, joint cracks, desert varnish, and dust mantling their flat tops.
+
+The mesa escarpments are 26–42.5 km away, with a mountain chain at 68–98 km. Rolling terrain covers 300 km, and the ground extends 1,000 km. The skybox ranges sit beyond all of that. Everything is procedural concept terrain, not a Mars DEM.
+
+This is an architectural visualization, not a validated pressure structure or landing-site design.
+
+## How this file was built
+
+The scripts in `tools/legacy/` were each run once, in order, on the previous file. Use them as references, not as repeatable operations:
+
+1. `consolidate_controls.py`: the single CONTROLS panel and the Night checkbox
+2. `fix_driver_curves.py`: removed stray keyframes from every driver F-curve. They snapped any driven value below 0.01 to zero, so the exterior haze and dust storm never rendered.
+3. `corner_seams.py`: welds around the corners
+4. `photoreal_terrain.py`, `photoreal_rocks.py`, `photoreal_freight.py`, `photoreal_people.py`, `photoreal_solar.py`, `photoreal_controls.py`, `photoreal_cameras.py`, `photoreal_buildings.py`, `photoreal_render_settings.py` (shared helpers: `gnkit.py`, `people_poses.py`). They were last run as one chain from `renders/before-photoreal-assets.blend`, which is not in the repository.

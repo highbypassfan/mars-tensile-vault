@@ -7,8 +7,9 @@ renders/
 .DS_Store
 Thumbs.db
 
-# Source copy is already packed inside the blend
-assets/sky/*.exr
+# The blend references these two sky maps externally, so they must be committed.
+# The older combined 4k map is packed/unused and stays local.
+assets/sky/starmap_2020_4k.exr
 
 # Surface image source copies are packed into the blend
 assets/surfaces/*.jpg
@@ -16,6 +17,6 @@ assets/surfaces/*.jpg
 # Local scene-development previews
 previews/*-test.png
 
-# Owner-created local lighting variants; the shared master has timeline presets
+# Owner-created local lighting variants
 mars-tensile-vault_night.blend
 mars-tensile-vault_nightnorooflts.blend

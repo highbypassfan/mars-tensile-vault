@@ -23,7 +23,7 @@ No blanket redistribution or modification license is asserted for the entire sce
 
 ## Astronomical sky
 
-NASA/Goddard Space Flight Center Scientific Visualization Studio, Ernie Wright: [Deep Star Maps 2020](https://svs.gsfc.nasa.gov/4851/). The 4k linear EXR is embedded in the blend; the original can be downloaded from that page. Acknowledgement and source credit are retained here; consult NASA's media usage guidelines for downstream use. Catalogue contributors are credited on the source page.
+NASA/Goddard Space Flight Center Scientific Visualization Studio, Ernie Wright: [Deep Star Maps 2020](https://svs.gsfc.nasa.gov/4851/). The separate `hiptyc_2020_16k.exr` bright-star map and `milkyway_2020_4k.exr` extended background are included in `assets/sky` and referenced relatively. They replace the older combined 4k map. Originals can be downloaded from that page. Acknowledgement and source credit are retained here; consult NASA's media usage guidelines for downstream use. Catalogue contributors are credited on the source page.
 
 Mars orientation coefficients: NASA/JPL NAIF `pck00010.tpc` (IAU 2009). Kernel copies were obtained from the [SpiceyPy test-kernel mirror](https://github.com/AndrewAnnex/SpiceyPyTestKernels); the implementation uses the Mars polynomial directly and has no SpiceyPy dependency. `naif0012.tls` is retained as the leap-second reference.
 
@@ -46,3 +46,11 @@ Mars orientation coefficients: NASA/JPL NAIF `pck00010.tpc` (IAU 2009). Kernel c
 [Leafy Grass](https://polyhaven.com/a/leafy_grass), **Charlotte Baglioni / Poly Haven**, **CC0**. Packed 2K diffuse, roughness and normal maps provide distant turf detail; blades are custom shared geometry. The supplied Poliigon grass was tested locally and is **not included** in the final publicly shared blend. Its source files remain untouched in the owner's asset folder.
 
 Year-15 concrete and regolith materials are procedural. Earlier CC0 surface maps remain in legacy data but no longer drive the active concrete/regolith materials. New settlement buildings, roads, mesa geometry and grass LOD meshes were created for this project.
+
+The daytime blue aureole and the skybox mountain ranges are procedural shaders written for this project; no image assets are used.
+
+## Photoreal pass (2026-09-22)
+
+The freight raw-material pallets, forklifts, basalt rocks, solar-farm rows, inverter skids, substations and HV cable are procedural geometry created for this project. The crowd uses static poses baked from the Standing Man model credited above (CC BY 4.0), with per-instance clothing and skin tints. Ground and rock materials are procedural shaders.
+
+The residential homes, towers, facades and window lighting (2026-09-24 buildings pass) are procedural geometry and shaders created for this project.

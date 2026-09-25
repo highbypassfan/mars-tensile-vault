@@ -3,11 +3,16 @@
 Based off of https://caseyhandmer.wordpress.com/2019/11/28/domes-are-very-over-rated/ and other discussions I've had on X.
 I've been working on this off and on for the past week or so, it's mostly parametric, though you may need to use an LLM to adjust things if they break, sorry! This was done with a mix of Astra and Fable 5.5, both were quite capable of making up for my lack of blender experience.
 
+
 I've noticed I'm overly polishing this, & putting off posting it, so I will add an addendum that there's a bunch of geometry and misc stuff that doesn't make sense, buildings should be pressure rated, there should be bulkheads, solar is silly, claude didn't really get what I meant by substation (mars is gonna be almost entirely DC I reckon). Oh also cursory math was done but connection hardware, tensile wires, film thickness etc are ballpark, I took some artistic liberties, probably needs to be thicker.
+
 
 It does look pretty darn cool though. I spent a good amount of time tweaking the ETFE. When the ceiling was lower I had some solar powered LED ring lights, which might make sense for work areas, though serviceability & materials use makes it silly on a practical level, better those cells were in the main array & everyone just carry lights around/job lights. 
 
-The design is tileable so it should adapt well to most flat terrain and any scale.
+
+The design is tileable so it should adapt well to most flat terrain and any scale. Have fun!
+
+
 
 Claude: 
 

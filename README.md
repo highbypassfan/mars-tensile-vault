@@ -25,7 +25,7 @@ An editable Blender concept of a Mars settlement under a tensile vault, after Ca
 1. Open **mars-tensile-vault.blend** in **Blender 5.2 LTS or newer**. Keep the `assets/sky` folder beside it (the night-sky EXRs are external files); clone or download the whole repository. No script auto-execution is needed.
 2. **CONTROLS • Mars vault** is already selected. The **Modifier tab** (wrench) shows every scene control in collapsible sections.
 3. **Tick `Night` for night, untick it for day.** That one checkbox switches the sky, Sun, exposure, ring LEDs, apron floods and lit windows. The timeline plays no part.
-4. Pick camera **01–13** and render (F12). The file is set up for Cycles GPU; choose your device in Preferences, or run `tools/render.py`. Expect several minutes per 1080p frame on a mid-range GPU (about 6 minutes on an RX 5700 XT at the saved 128 samples). The first ~40 s is scene preparation, not a hang. Switch the viewport out of Rendered mode before pressing F12 so the GPU isn't holding two copies of the scene. If your GPU driver is unstable under long renders, set Render → Device to CPU. An 8-core Ryzen renders the 65% README previews in about 3 minutes each, and the scene fits comfortably in 32 GB of RAM.
+4. Pick camera **01–13** and render (F12). The file is set up for Cycles GPU; choose your device in Preferences, or run `tools/render.py`. Expect several minutes per 1080p frame on a mid-range GPU (about 6 minutes on an RX 5700 XT at the saved 128 samples). The first ~20 s is scene preparation, not a hang. Switch the viewport out of Rendered mode before pressing F12 so the GPU isn't holding two copies of the scene. If your GPU driver is unstable under long renders, set Render → Device to CPU. An 8-core Ryzen renders the 65% README previews in about 3 minutes each, and the scene fits comfortably in 32 GB of RAM.
 
 | Section | Holds |
 |---|---|
@@ -33,10 +33,12 @@ An editable Blender concept of a Mars settlement under a tensile vault, after Ca
 | Sky and atmosphere | Mars blue aureole, skybox mountains, stars, Milky Way, exterior haze, dust storm |
 | Moon (Phobos) | Fill light, presentation boost, position, disk |
 | Habitat lights (night) | LED glow and power, colour temperature, which rings are lit, beam, airlock floods |
-| Districts | Homes, warehouses, industry, cargo yard, Starships, grass, people, rock field, solar farm and power |
+| Districts | Homes, warehouses, industry, cargo yard, Starships, grass, people (off by default), rock field, solar farm and power |
 | Grass detail | Distance LOD and density |
 | Membrane optics | ETFE film IOR, haze, reflections, Kevlar translucency |
 | Viewport performance | Coarse anchors in the viewport (renders keep full detail) |
+
+The viewport shows lightweight stand-ins for the people, freight, rocks and membrane (about 16 M triangles in total); final renders always use full detail.
 
 Structure is edited on two geometry objects, also in the Modifier tab: **TENSILE CAGE** (grid, spacing, height, anchors, cables) and **MEMBRANE** (concrete pad, clamps, Kevlar, airlocks). They are kept apart from the look controls because re-evaluating the membrane takes a few seconds.
 
@@ -53,7 +55,7 @@ Full details are in **[docs/CONTROLS.md](docs/CONTROLS.md)**.
 - **Buildings:** three-storey homes with recessed, framed windows, precast panel facades in varied tints, floor bands, glass balconies, entrance canopies and rooftop PV and plant. Six residential towers of 24–38 storeys (82–130 m) use the same generator. Factory halls have ribbed metal cladding. At night, windows light up at random with warm or cool interiors.
 - **Settlement:** factory halls, tanks, three heritage Starships inside, and eight crew/cargo ships on pads 2 km east, reached by a compacted-regolith road.
 - **Freight yard:** forklift-spaced pallet blocks stacked 2–4 high: wrapped equipment, drums, rolled steel plate, pipe bundles, bulk bags, sintered-regolith bricks and aluminium ingots, with forklifts in the aisles.
-- **People:** about 8,000 residents and workers standing, walking or looking up at the roof, on walkways, streets and park turf. They are static poses of the embedded rigged figure, with varied clothing and skin.
+- **People:** about 8,000 residents and workers standing, walking or looking up at the roof, on walkways, streets and park turf. The crowd is off by default (Districts → People) because it adds render preparation time; the previews show it switched on. They are static poses of the embedded rigged figure, with varied clothing and skin.
 - **Power:** a 5.8 km square solar farm to the west, made of low east/west tent rows laid on the terrain, with access tracks and inverter skids (collectors assumed buried). It feeds a substation on the farm edge. A surface-laid HV cable on sleepers runs to a duct vault at the west wall, then underground to a battery substation inside the dome, under the sloping west wall.
 - **Grass:** shared blade instances in three distance tiers that fade to a textured turf surface, never realised.
 - **Sky:** a butterscotch day sky with a faint blue aureole around the Sun (as seen from Mars) and hazy procedural ranges on the far horizon. The night sky is NASA's 16k star catalogue, oriented for Gale Crater, with the Milky Way.

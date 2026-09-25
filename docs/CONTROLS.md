@@ -53,12 +53,11 @@ Moon fill, Moon fill strength, **Moon presentation boost** (1000; set 1 for the 
 | LED checkerboard | on | Also keep only alternating L+W parity (145 of the 289 3×3 positions) |
 | LED beam angle deg / beam gain / ambient glow fraction | 160 / 1.6 / 0.08 | Downward cone, brightness scale, faint all-angle glow |
 | Ring mesh illumination gain | 1 | Converts ring power to mesh radiance (artistic calibration) |
-| Annular ring lighting | on | The LED ring meshes emit. Off restores the older sampled disk lights. |
 | Airlock apron lights / Apron light power W | on / 1800 | Visible exterior floods at the vehicle airlocks |
 
 ### Districts
 
-Visibility toggles for Homes, Warehouses, Industry and tanks, Cargo yard (the stacked freight yard), Starships, Grass areas, **People**, **Rock field** and **Solar farm and power**. Buildings share mesh data; use Make Single User before editing one instance.
+Visibility toggles for Homes, Warehouses, Industry and tanks, Cargo yard (the stacked freight yard), Starships, Grass areas, **People** (off by default), **Rock field** and **Solar farm and power**. Buildings share mesh data; use Make Single User before editing one instance.
 
 ### Grass detail
 
@@ -72,9 +71,11 @@ Film IOR (1.4), Film haze per ply, Film reflection roughness and strength, and A
 
 Viewport tether LOD (on), every L / W (2 / 2), branches, sides and ring segments. These affect interactive viewports only; final renders always use full detail. The default shows 625 of the 2,500 anchors with about 96% fewer anchor faces.
 
+Automatic viewport reductions (no control needed): the membrane uses a half-resolution copy of its per-bay patch (`SOURCE • ring-cut quad patch • viewport`), and people, freight and rocks use stand-ins. With default settings the viewport draws about 16 M triangles and 70 k instances (the crowd adds about 5 M).
+
 ## Scene detail objects
 
-Each has its own small modifier for tuning. All use shared instances, which are never realised, and show only a fraction in the viewport.
+Each has its own small modifier for tuning. All use shared instances, which are never realised. In the viewport they show a fraction of their instances, and people, freight and rocks are swapped for light stand-ins (`ASSET • … viewport stand-ins` collections, chosen by an Is Viewport switch). Final renders always use the full assets.
 
 | Object | Modifier inputs |
 |---|---|
@@ -124,7 +125,7 @@ The same clamp cross-section follows the full perimeter, including corners, with
 
 Cycles GPU, 128 samples, adaptive sampling (noise threshold 0.03), denoising, 32 total and transmission bounces, 8 diffuse bounces, and 96 transparent crossings, at 1920 × 1080. `tools/render.py` picks a GPU (OptiX, CUDA, HIP, Metal or oneAPI) and falls back to CPU.
 
-Performance: peak GPU memory is about 4.3 GB. On an RX 5700 XT a 1080p frame spends ~40 s preparing the scene (the scatters are evaluated at full density) and then ~3 s per sample. Don't keep a viewport in Rendered mode while rendering with F12 on an 8 GB card. Raise Max Samples for final stills if the denoised result is blotchy. CPU rendering works (the scene fits easily in 32 GB of RAM) but is several times slower than a mid-range GPU.
+Performance: peak memory is about 3 GB. On an RX 5700 XT a 1080p frame spends ~20 s preparing the scene (the scatters are evaluated at full density) and then ~3 s per sample. Don't keep a viewport in Rendered mode while rendering with F12 on an 8 GB card. Raise Max Samples for final stills if the denoised result is blotchy. CPU rendering works (the scene fits easily in 32 GB of RAM) but is several times slower than a mid-range GPU.
 
 ## Sky orientation
 
@@ -145,4 +146,5 @@ The scripts in `tools/legacy/` were each run once, in order, on the previous fil
 1. `consolidate_controls.py`: the single CONTROLS panel and the Night checkbox
 2. `fix_driver_curves.py`: removed stray keyframes from every driver F-curve. They snapped any driven value below 0.01 to zero, so the exterior haze and dust storm never rendered.
 3. `corner_seams.py`: welds around the corners
-4. `photoreal_terrain.py`, `photoreal_rocks.py`, `photoreal_freight.py`, `photoreal_people.py`, `photoreal_solar.py`, `photoreal_controls.py`, `photoreal_cameras.py`, `photoreal_buildings.py`, `photoreal_render_settings.py` (shared helpers: `gnkit.py`, `people_poses.py`). They were last run as one chain from `renders/before-photoreal-assets.blend`, which is not in the repository.
+4. `photoreal_terrain.py`, `photoreal_rocks.py`, `photoreal_freight.py`, `photoreal_people.py`, `photoreal_solar.py`, `photoreal_controls.py`, `photoreal_cameras.py`, `photoreal_buildings.py`, `photoreal_render_settings.py` (shared helpers: `gnkit.py`, `people_poses.py`).
+5. `perf_pass.py`: removed a hidden 3.7 M-instance pebble scatter from the cage group and the 2,500 legacy sampled ring lights (with their 15,000 drivers and the Annular toggle), and added viewport stand-ins. They were last run as one chain from `renders/before-photoreal-assets.blend`, which is not in the repository.

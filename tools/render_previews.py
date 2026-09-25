@@ -30,6 +30,10 @@ modifier = controls.modifiers['CONTROLS']
 night_input = next(i.identifier for i in modifier.node_group.interface.items_tree
                    if i.item_type == 'SOCKET' and i.name == 'Night')
 
+people = next(i.identifier for i in modifier.node_group.interface.items_tree
+              if i.item_type == 'SOCKET' and i.name == 'People')
+getattr(modifier.properties.inputs, people).value = True    # the crowd is off by default; show it here
+
 scene.cycles.samples = 96
 scene.cycles.adaptive_threshold = 0.012
 scene.render.resolution_percentage = 65

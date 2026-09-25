@@ -1,4 +1,4 @@
-# Mars Tensile Vault — year 15
+# Mars Tensile Vault
 
 Based off of https://caseyhandmer.wordpress.com/2019/11/28/domes-are-very-over-rated/ and other discussions I've had on X.
 I've been working on this off and on for the past week or so, it's mostly parametric, though you may need to use an LLM to adjust things if they break, sorry! This was done with a mix of Astra and Fable 5.5, both were quite capable of making up for my lack of blender experience.

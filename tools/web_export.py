@@ -418,7 +418,7 @@ def export_geometry(out, quick=False):
 CAMERA_HIDDEN = ('MEMBRANE', 'ANCHOR BUILDER', 'Homes', 'Residential tower', 'Warehouses', 'Industry',
                  'Process tanks', 'Heritage Starship', 'Crew Starship', 'Cargo Starship', 'People', 'Freight yard',
                  'Battery substation', 'Solar farm substation', 'Apron light', 'Entrance fixture', 'Curiosity',
-                 'Person', 'PERSON', 'Atmosphere', 'CONTROLS')
+                 'Person', 'PERSON', 'Atmosphere', 'CONTROLS', 'Solar farm • east-west')
 
 
 def camera_transparent(m):
@@ -482,16 +482,19 @@ def ortho_render(name, x0, y0, size, px, samples, out):
     D.objects.remove(cam)
 
 
-def export_bakes(out, quick=False):
+def export_bakes(out, quick=False, only=None):
     bake_setup()
     s = 0.25 if quick else 1.0
-    ortho_render('ground_city.jpg', *CITY, int(6144 * s), 24, out)
-    ortho_render('ground_near.jpg', *NEAR, int(4096 * s), 24, out)
-    ortho_render('ground_far.jpg', *FAR, int(4096 * s), 16, out)
+    for name, ext, px, spp in (('city', CITY, 6144, 24), ('near', NEAR, 4096, 24), ('far', FAR, 4096, 16)):
+        if only is None or name in only:
+            ortho_render(f'ground_{name}.jpg', *ext, int(px * s), spp, out)
 
 
-def export_sky(out, quick=False):
+def export_sky(out, quick=False, blue=None):
     prepare()
+    if blue is not None:
+        set_control('Day sky blue', blue)
+        D.objects['CONTROLS • Mars vault'].update_tag()
     scene = bpy.context.scene
     atmo = D.objects.get('Atmosphere • valley haze with clear interior')
     for ob in scene.objects:
@@ -574,7 +577,10 @@ def scene_json(out):
             fwd = ob.matrix_world.to_3x3() @ Vector((0, 0, -1))
             cams.append({'name': ob.name, 'pos': list(ob.location), 'dir': list(fwd),
                          'fov': math.degrees(ob.data.angle_y)})
-    data = {'units': 'metres, Blender Z-up (the glb is Y-up)', 'city': CITY, 'near': NEAR, 'far': FAR,
+    solar = {'x0': -8430.0, 'x1': -2600.0, 'y0': -2915.0, 'y1': 2915.0, 'pitch': 4.9, 'seg': 40.0,
+             'tilt_deg': 12.0, 'panel': 2.0, 'low': 0.18, 'track_every': 500.0, 'track_half': 26.0,
+             'spine_half': 8.0, 'skid_every': 500.0}      # mirrors tools/legacy/photoreal_solar.py
+    data = {'units': 'metres, Blender Z-up (the glb is Y-up)', 'city': CITY, 'near': NEAR, 'far': FAR, 'solar': solar,
             'sun_dir': list(d), 'exposure_ev': scene.view_settings.exposure, 'cameras': cams}
     with open(os.path.join(out, 'scene.json'), 'w', encoding='utf-8') as f:
         json.dump(data, f, indent=1, ensure_ascii=False)
@@ -586,18 +592,20 @@ def main():
     ap.add_argument('--out', required=True)
     ap.add_argument('--geometry', action='store_true')
     ap.add_argument('--bake', action='store_true')
+    ap.add_argument('--only', help='comma list of bakes: city,near,far')
     ap.add_argument('--sky', action='store_true')
     ap.add_argument('--quick', action='store_true')
     ap.add_argument('--freight', action='store_true')
+    ap.add_argument('--sky-blue', type=float, default=0.6, help='Day sky blue used for the web sky (scene default 0.35)')
     a = ap.parse_args(argv)
     os.makedirs(a.out, exist_ok=True)
     scene_json(a.out)
     if a.geometry:
         print('GEOMETRY', export_geometry(a.out, a.quick), flush=True)
     if a.bake:
-        export_bakes(a.out, a.quick)
+        export_bakes(a.out, a.quick, a.only.split(',') if a.only else None)
     if a.sky:
-        export_sky(a.out, a.quick)
+        export_sky(a.out, a.quick, a.sky_blue)
     if a.freight:
         export_freight_textures(a.out)
 

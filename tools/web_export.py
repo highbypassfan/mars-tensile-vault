@@ -443,6 +443,11 @@ def bake_setup():
         if ob.name.startswith(CAMERA_HIDDEN) or (ob.parent and ob.parent.name.startswith('PERSON')):
             ob.visible_camera = False
             ob.visible_glossy = False
+    # The browser shows only the farm substation's white enclosures, so its pad,
+    # fence and gantries must not leave a baked shadow either.
+    sub = next((o for o in scene.objects if o.name.startswith('Solar farm substation')), None)
+    if sub:
+        sub.visible_shadow = False
     atmo = D.objects.get('Atmosphere • valley haze with clear interior')
     if atmo:
         atmo.visible_camera = False      # the browser adds distance fog instead

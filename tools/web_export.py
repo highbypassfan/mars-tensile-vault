@@ -748,6 +748,20 @@ def export_freight_textures(out):
     print('FREIGHT TEXTURES', done, flush=True)
 
 
+def web_viewpoints(cams):
+    """The web list opens on the mesa view as '01 • valley and solar field' (no duplicate 07)."""
+    mesa = next((c for c in cams if c['name'].startswith('07')), None)
+    if not mesa:
+        return cams
+    out = []
+    for c in cams:
+        if c['name'].startswith('01'):
+            out.append(dict(mesa, name='01 • valley and solar field'))
+        elif c is not mesa:
+            out.append(c)
+    return out
+
+
 def scene_json(out):
     scene = bpy.context.scene
     sun = D.objects['Mars_Sun']
@@ -758,6 +772,7 @@ def scene_json(out):
             fwd = ob.matrix_world.to_3x3() @ Vector((0, 0, -1))
             cams.append({'name': ob.name, 'pos': list(ob.location), 'dir': list(fwd),
                          'fov': math.degrees(ob.data.angle_y)})
+    cams = web_viewpoints(cams)
     solar = {'x0': -8430.0, 'x1': -2600.0, 'y0': -2915.0, 'y1': 2915.0, 'pitch': 4.9, 'seg': 40.0,
              'tilt_deg': 12.0, 'panel': 2.0, 'low': 0.18, 'track_every': 500.0, 'track_half': 26.0,
              'spine_half': 8.0, 'skid_every': 500.0}      # mirrors tools/legacy/photoreal_solar.py

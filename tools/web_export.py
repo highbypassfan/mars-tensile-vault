@@ -57,7 +57,7 @@ def prepare(people_fraction=0.13):
     set_control('Night', False)
     set_control('People', True)
     set_control('Viewport tether LOD', True)
-    for k, v in (('Viewport tether every L', 1), ('Viewport tether every W', 1), ('Viewport tether branches', 3),
+    for k, v in (('Viewport tether every L', 1), ('Viewport tether every W', 1), ('Viewport tether branches', 6),
                  ('Viewport tether sides', 3), ('Viewport ring segments', 12)):
         set_control(k, v)
     set_input(membrane(), 'Clear viewport membrane', False)
@@ -327,10 +327,123 @@ SKIP_REALIZED = (
     'Freight • continuous', 'Freight • raised', 'Roads', 'Landing field', 'Interior ship foundation', 'Rock field',
     'Solar farm • east-west', 'Solar farm • access', 'Power cable', 'People', 'Freight yard', 'MEMBRANE', 'TENSILE',
     'ANCHOR BUILDER', 'Compacted yard gravel', 'ARCHIVE', 'SOURCE', 'ASSET', 'Exterior eroded', 'EXTERIOR',
-    'Ring light', 'blade', 'Cargo variant', 'Aluminum pallet', 'Worker', 'Person', 'PERSON', 'Curiosity',
+    'Ring light', 'blade', 'Cargo variant', 'Aluminum pallet', 'Worker', 'Person', 'PERSON',
 )
+OBSERVER_PARTS = ('Person • Body', 'Person • Head', 'Person • clothing', 'Person • shoe_L', 'Person • shoe_R',
+                  'Person • LeftCornea', 'Person • RightCornea')
 
-DECIMATE = {'Starship': 0.08, 'Curiosity': 0.15, 'Heritage': 0.08, 'Homes': 0.55, 'Residential tower': 0.55}
+DECIMATE = {'Starship': 0.08, 'Curiosity': 0.35, 'Heritage': 0.08, 'Homes': 0.55, 'Residential tower': 0.55}
+
+
+USE_GPU = False
+
+
+def set_device(scene):
+    """CPU by default; --gpu renders on the GPU (HIP, then OptiX/CUDA, whichever Blender finds)."""
+    scene.cycles.device = 'CPU'
+    if not USE_GPU:
+        return
+    prefs = bpy.context.preferences.addons['cycles'].preferences
+    for kind in ('HIP', 'OPTIX', 'CUDA', 'ONEAPI', 'METAL'):
+        try:
+            prefs.compute_device_type = kind
+        except TypeError:
+            continue
+        prefs.get_devices()
+        gpus = [d for d in prefs.devices if d.type == kind]
+        if gpus:
+            for d in prefs.devices:
+                d.use = d.type == kind
+            scene.cycles.device = 'GPU'
+            print('RENDER DEVICE', kind, [d.name for d in gpus], flush=True)
+            return
+    print('RENDER DEVICE: no GPU found, using CPU', flush=True)
+
+
+def bake_colors(objects, px):
+    """Cycles diffuse-colour bake of each material on `objects` (as posed/tinted in the scene)
+    into its own packed image; returns {material name: image}."""
+    scene = bpy.context.scene
+    scene.render.engine = 'CYCLES'
+    set_device(scene)
+    scene.cycles.samples = 4
+    bk = scene.render.bake
+    bk.use_pass_direct = bk.use_pass_indirect = False
+    bk.use_pass_color = True
+    bk.margin = 4
+    bk.use_clear = True
+    images, added = {}, []
+    for ob in objects:
+        for m in (sl.material for sl in ob.material_slots):     # object-linked slots too (the shirt)
+            if not m or m.name in images:
+                continue
+            img = D.images.new('WEB bake ' + m.name, px, px)
+            n = m.node_tree.nodes.new('ShaderNodeTexImage')
+            n.image = img
+            m.node_tree.nodes.active = n
+            images[m.name] = img
+            added.append((m, n))
+    for ob in scene.objects:
+        ob.select_set(False)
+    for ob in objects:
+        ob.hide_set(False)
+        ob.select_set(True)
+        uv = ob.data.uv_layers
+        render_uv = next((u for u in uv if u.active_render), None)
+        if render_uv:
+            uv.active = render_uv
+    bpy.context.view_layer.objects.active = objects[0]
+    bpy.ops.object.bake(type='DIFFUSE')
+    for m, n in added:
+        m.node_tree.nodes.remove(n)
+    for img in images.values():
+        img.pack()
+    return images
+
+
+def baked_material(name, img, rough=0.7):
+    m = D.materials.new('WEB • ' + name)
+    m.use_nodes = True
+    nt = m.node_tree
+    b = nt.nodes['Principled BSDF']
+    t = nt.nodes.new('ShaderNodeTexImage')
+    t.image = img
+    nt.links.new(t.outputs['Color'], b.inputs['Base Color'])
+    b.inputs['Roughness'].default_value = rough
+    return m
+
+
+def baked_copy(ob, name, dg, images, ratio=1.0):
+    """Evaluated (posed) copy of `ob` with only its render UV map and the baked materials."""
+    me = D.meshes.new_from_object(ob.evaluated_get(dg), preserve_all_data_layers=False, depsgraph=dg)
+    me.name = name
+    keep = next((u.name for u in me.uv_layers if u.active_render), None)
+    for u in [u for u in me.uv_layers if u.name != keep]:
+        me.uv_layers.remove(u)
+    for i, sl in enumerate(ob.material_slots):
+        m = sl.material
+        if not m or i >= len(me.materials):
+            continue
+        if m.name in images:
+            me.materials[i] = baked_material(m.name, images[m.name], 0.85 if 'outfit' in m.name or 'shirt' in m.name else 0.6)
+        else:
+            me.materials[i] = web_material(m)
+    return mesh_object(name, decimate(me, ratio), ob.matrix_world.copy())
+
+
+def observer_info(dg):
+    """Observer position and facing (from the corneas and the head mesh), for the viewer's start view."""
+    def centre(name):
+        ob = next(o for o in D.objects if o.name.startswith(name))
+        me = ob.evaluated_get(dg).to_mesh()
+        c = sum((ob.matrix_world @ v.co for v in me.vertices), Vector()) / len(me.vertices)
+        ob.evaluated_get(dg).to_mesh_clear()
+        return c
+    head, eyes = centre('Person • Head'), (centre('Person • LeftCornea') + centre('Person • RightCornea')) / 2
+    fwd = head - eyes        # the head mesh is face-heavy, so its centroid sits in front of the corneas
+    fwd.z = 0
+    feet = (centre('Person • shoe_L') + centre('Person • shoe_R')) / 2
+    return {'pos': list(feet), 'forward': list(fwd.normalized())}
 
 
 def export_geometry(out, quick=False):
@@ -348,6 +461,9 @@ def export_geometry(out, quick=False):
         if ob.name.startswith(SKIP_REALIZED) or any(c.hide_render for c in ob.users_collection):
             continue
         if any(m.type == 'NODES' for m in ob.modifiers):
+            continue
+        if ob.name.startswith('Curiosity'):       # textured hero model: bake its layered materials
+            baked_copy(ob, 'WEB ' + ob.name, dg, bake_colors([ob], 512 if quick else 1024), DECIMATE['Curiosity'])
             continue
         key = ob.data.name
         if key not in shared:
@@ -383,8 +499,22 @@ def export_geometry(out, quick=False):
     for obname, tag, ratio in (('People • residents and workers', 'people', 0.12),
                                ('Freight yard • stacked pallet blocks and forklifts', 'freight', 1.0)):
         meshes, items = instances_of(dg, D.objects[obname], ratio=ratio)
+        if tag == 'people':      # the browser draws 2D stand-ins only: ship a token mesh per pose
+            for k in meshes:
+                me = D.meshes.new('WEB person token ' + str(k))
+                me.from_pydata([(0, 0, 0), (0.1, 0, 0), (0, 0, 1.75)], [], [(0, 1, 2)])
+                meshes[k] = me
         instancer('WEB ' + tag, meshes, items)
         stats[tag] = len(items)
+
+    # 4b. The SpaceX-shirt observer, posed, with his materials baked to textures (shirt print included).
+    parts = [o for o in scene.objects if o.type == 'MESH' and o.name.startswith(OBSERVER_PARTS)]
+    images = bake_colors([o for o in parts if 'Cornea' not in o.name], 1024 if quick else 2048)
+    for o in parts:
+        baked_copy(o, 'WEB observer ' + o.name, dg, images)
+    stats['observer parts'] = len(parts)
+    with open(os.path.join(out, 'observer.json'), 'w') as f:
+        json.dump(observer_info(dg), f)
 
     # 5. Terrain meshes (drawn in the browser with the baked ground textures).
     ground_objs = [o for o in scene.objects if o.type == 'MESH' and o.visible_get() and not o.hide_render and (
@@ -459,7 +589,7 @@ def bake_setup():
         if m.name.startswith(('Anchor •', 'Ring •')) and m.node_tree:
             camera_transparent(m)
     scene.render.engine = 'CYCLES'
-    scene.cycles.device = 'CPU'
+    set_device(scene)
     scene.cycles.use_denoising = True
     scene.render.film_transparent = False
     scene.render.image_settings.file_format = 'JPEG'
@@ -495,6 +625,52 @@ def export_bakes(out, quick=False, only=None):
             ortho_render(f'ground_{name}.jpg', *ext, int(px * s), spp, out)
 
 
+def export_detail(out, x0=3500.0, y0=3500.0, size=24.0, px=2048):
+    """Tiling close-up ground texture: a small top-down render of open ground, high-passed
+    (divided by its local mean, stored around mid-grey) and made seamless, for the browser to
+    multiply over the coarse bakes near the camera."""
+    import numpy as np
+    bake_setup()
+    # An ortho camera dices adaptive displacement at its pixel size over the whole terrain
+    # (billions of micro-polygons at 1 cm/px), so dice from a perspective camera just above the patch.
+    scene = bpy.context.scene
+    dc = D.objects.new('WEB dicing camera', D.cameras.new('WEB dicing camera'))
+    scene.collection.objects.link(dc)
+    dc.location = (x0 + size / 2, y0 + size / 2, 30.0)
+    scene.cycles.dicing_camera = dc
+    scene.cycles.offscreen_dicing_scale = 25.0
+    ortho_render('_detail_raw.jpg', x0, y0, size, px, 32, out)
+    scene.cycles.dicing_camera = None
+    D.objects.remove(dc)
+    raw = os.path.join(out, '_detail_raw.jpg')
+    img = D.images.load(raw)
+    a = np.array(img.pixels[:], dtype=np.float32).reshape(px, px, 4)[:, :, :3]
+    D.images.remove(img)
+    os.remove(raw)
+
+    def blur(x, r):           # wrap-around box blur, three passes ~ gaussian
+        for _ in range(3):
+            for ax in (0, 1):
+                c = np.cumsum(np.concatenate([x.take(range(-r, 0), ax), x, x.take(range(r), ax)], ax), ax)
+                x = (c.take(range(2 * r, px + 2 * r), ax) - np.concatenate(
+                    [np.zeros_like(c.take([0], ax)), c.take(range(px - 1), ax)], ax)) / (2 * r + 1)
+        return x
+    hp = a / np.maximum(blur(a, px // 16), 1e-4)              # local contrast per channel, ~1.0 mean, no tint
+    # Seamless: cross-fade with a half-shifted copy whose wrap seam sits in the middle.
+    t = np.abs(np.linspace(-1, 1, px))
+    w = np.clip((1 - np.maximum(t[:, None], t[None, :])) * 4, 0, 1)[:, :, None]
+    sh = np.roll(np.roll(hp, px // 2, 0), px // 2, 1)
+    hp = w * hp + (1 - w) * sh
+    out_img = D.images.new('WEB detail', px, px)
+    rgba = np.concatenate([np.clip(hp * 0.5, 0, 1), np.ones((px, px, 1), np.float32)], 2)
+    out_img.pixels = rgba.ravel()
+    out_img.filepath_raw = os.path.join(out, 'ground_detail.jpg')
+    out_img.file_format = 'JPEG'
+    bpy.context.scene.render.image_settings.quality = 88
+    out_img.save_render(out_img.filepath_raw)
+    print('DETAIL', size, 'm tile', px, 'px', flush=True)
+
+
 def export_sky(out, quick=False, blue=None):
     prepare()
     if blue is not None:
@@ -516,7 +692,7 @@ def export_sky(out, quick=False, blue=None):
     if sun:
         sun.hide_render = False
     scene.render.engine = 'CYCLES'
-    scene.cycles.device = 'CPU'
+    set_device(scene)
     scene.render.resolution_x, scene.render.resolution_y = (1024, 512) if quick else (4096, 2048)
     scene.cycles.samples = 32
     scene.render.image_settings.file_format = 'JPEG'
@@ -536,7 +712,7 @@ def export_freight_textures(out):
     world.node_tree.nodes['Background'].inputs['Strength'].default_value = 1.0
     scene.world = world
     scene.render.engine = 'CYCLES'
-    scene.cycles.device = 'CPU'
+    set_device(scene)
     scene.cycles.samples = 48
     scene.cycles.use_denoising = True
     scene.view_settings.view_transform = 'Standard'
@@ -585,7 +761,10 @@ def scene_json(out):
     solar = {'x0': -8430.0, 'x1': -2600.0, 'y0': -2915.0, 'y1': 2915.0, 'pitch': 4.9, 'seg': 40.0,
              'tilt_deg': 12.0, 'panel': 2.0, 'low': 0.18, 'track_every': 500.0, 'track_half': 26.0,
              'spine_half': 8.0, 'skid_every': 500.0}      # mirrors tools/legacy/photoreal_solar.py
-    data = {'units': 'metres, Blender Z-up (the glb is Y-up)', 'city': CITY, 'near': NEAR, 'far': FAR, 'solar': solar,
+    obs = os.path.join(out, 'observer.json')
+    observer = json.load(open(obs)) if os.path.exists(obs) else None
+    elev = math.degrees(math.asin(max(-1.0, min(1.0, d.normalized().z))))
+    data = {'sun_elevation_deg': round(elev, 1), 'observer': observer, 'units': 'metres, Blender Z-up (the glb is Y-up)', 'city': CITY, 'near': NEAR, 'far': FAR, 'solar': solar,
             'sun_dir': list(d), 'exposure_ev': scene.view_settings.exposure, 'cameras': cams}
     with open(os.path.join(out, 'scene.json'), 'w', encoding='utf-8') as f:
         json.dump(data, f, indent=1, ensure_ascii=False)
@@ -601,18 +780,30 @@ def main():
     ap.add_argument('--sky', action='store_true')
     ap.add_argument('--quick', action='store_true')
     ap.add_argument('--freight', action='store_true')
+    ap.add_argument('--detail', action='store_true', help='Tiling close-up ground texture')
     ap.add_argument('--sky-blue', type=float, default=0.6, help='Day sky blue used for the web sky (scene default 0.35)')
+    ap.add_argument('--gpu', action='store_true', help='Render bakes on the GPU')
+    ap.add_argument('--sun-hour', type=float, default=15.45,
+                    help='Day solar hour for the web bakes (15.45 puts the sun ~35 deg up; scene default 15)')
     a = ap.parse_args(argv)
+    global USE_GPU
+    USE_GPU = a.gpu
     os.makedirs(a.out, exist_ok=True)
+    set_control('Day solar hour', a.sun_hour)
+    D.objects['CONTROLS • Mars vault'].update_tag()
+    bpy.context.view_layer.update()
     scene_json(a.out)
     if a.geometry:
         print('GEOMETRY', export_geometry(a.out, a.quick), flush=True)
+        scene_json(a.out)
     if a.bake:
         export_bakes(a.out, a.quick, a.only.split(',') if a.only else None)
     if a.sky:
         export_sky(a.out, a.quick, a.sky_blue)
     if a.freight:
         export_freight_textures(a.out)
+    if a.detail:
+        export_detail(a.out)
 
 
 if __name__ == '__main__':

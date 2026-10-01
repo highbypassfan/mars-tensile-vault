@@ -360,6 +360,23 @@ def set_device(scene):
     print('RENDER DEVICE: no GPU found, using CPU', flush=True)
 
 
+def fresh_uv(ob):
+    """Bake target without overlaps: the shirt's own UVs mirror front and back, so a print
+    projected on the back would bake onto the front too. Materials keep sampling the render UV."""
+    uv = ob.data.uv_layers
+    new = uv.get('WEB bake') or uv.new(name='WEB bake', do_init=False)
+    uv.active = new
+    vl = bpy.context.view_layer
+    for o in bpy.context.scene.objects:
+        o.select_set(False)
+    ob.select_set(True)
+    vl.objects.active = ob
+    bpy.ops.object.mode_set(mode='EDIT')
+    bpy.ops.mesh.select_all(action='SELECT')
+    bpy.ops.uv.smart_project(angle_limit=1.15, island_margin=0.002)
+    bpy.ops.object.mode_set(mode='OBJECT')
+
+
 def bake_colors(objects, px):
     """Cycles diffuse-colour bake of each material on `objects` (as posed/tinted in the scene)
     into its own packed image; returns {material name: image}."""
@@ -383,15 +400,18 @@ def bake_colors(objects, px):
             m.node_tree.nodes.active = n
             images[m.name] = img
             added.append((m, n))
-    for ob in scene.objects:
-        ob.select_set(False)
     for ob in objects:
         ob.hide_set(False)
-        ob.select_set(True)
         uv = ob.data.uv_layers
         render_uv = next((u for u in uv if u.active_render), None)
         if render_uv:
             uv.active = render_uv
+        if any(sl.material and sl.link == 'OBJECT' for sl in ob.material_slots):
+            fresh_uv(ob)
+    for ob in scene.objects:
+        ob.select_set(False)
+    for ob in objects:
+        ob.select_set(True)
     bpy.context.view_layer.objects.active = objects[0]
     bpy.ops.object.bake(type='DIFFUSE')
     for m, n in added:
@@ -417,7 +437,7 @@ def baked_copy(ob, name, dg, images, ratio=1.0):
     """Evaluated (posed) copy of `ob` with only its render UV map and the baked materials."""
     me = D.meshes.new_from_object(ob.evaluated_get(dg), preserve_all_data_layers=False, depsgraph=dg)
     me.name = name
-    keep = next((u.name for u in me.uv_layers if u.active_render), None)
+    keep = 'WEB bake' if 'WEB bake' in me.uv_layers else next((u.name for u in me.uv_layers if u.active_render), None)
     for u in [u for u in me.uv_layers if u.name != keep]:
         me.uv_layers.remove(u)
     for i, sl in enumerate(ob.material_slots):
@@ -432,15 +452,16 @@ def baked_copy(ob, name, dg, images, ratio=1.0):
 
 
 def observer_info(dg):
-    """Observer position and facing (from the corneas and the head mesh), for the viewer's start view."""
+    """Observer position and facing (from the shirt-print projector), for the viewer's start view."""
     def centre(name):
         ob = next(o for o in D.objects if o.name.startswith(name))
         me = ob.evaluated_get(dg).to_mesh()
         c = sum((ob.matrix_world @ v.co for v in me.vertices), Vector()) / len(me.vertices)
         ob.evaluated_get(dg).to_mesh_clear()
         return c
-    head, eyes = centre('Person • Head'), (centre('Person • LeftCornea') + centre('Person • RightCornea')) / 2
-    fwd = head - eyes        # the head mesh is face-heavy, so its centroid sits in front of the corneas
+    # The shirt-print projector's Z axis points out of his back (set from the toe direction).
+    proj = D.objects['PERSON • shirt logo projector']
+    fwd = -(proj.matrix_world.to_3x3() @ Vector((0, 0, 1)))
     fwd.z = 0
     feet = (centre('Person • shoe_L') + centre('Person • shoe_R')) / 2
     return {'pos': list(feet), 'forward': list(fwd.normalized())}
